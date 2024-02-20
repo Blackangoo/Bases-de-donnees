@@ -10,6 +10,7 @@ This course therefore presents fundamental concepts related to databases, from t
 #Learning Objectives
 
 By the end of the course, the student should be able to:
+
     - Use a database management system
     - Create a class diagram from a business context
     - Analyze a given business context
