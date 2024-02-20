@@ -7,7 +7,7 @@ Data is collected and analyzed every day. In order to carry out these steps opti
 
 This course therefore presents fundamental concepts related to databases, from their creation to the manipulation of the data they contain. You will discover all the steps of creating a database, passing through the conceptual, relational, and physical levels (using SQL language). Additionally, you will learn how to manipulate this data and extract information from it using SQL queries. All of this will be illustrated through various exercises to be carried out during practical sessions and through a semester project to be completed in groups.
 
-#Learning Objectives
+# Learning Objectives
 
 By the end of the course, the student should be able to:
 
