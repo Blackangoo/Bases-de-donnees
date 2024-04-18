@@ -4,12 +4,12 @@ First, navigate to the folder where you want to clone the repository to, using y
 Next, clone this repository using the green button via HTTPS, using 'git clone <link>' in your terminal.
 Now, normally, you have the repository on your computer.
 Once you have modified/completed your task, still in your terminal, as you want to push your modifications, type in:
-' git add . '
-' git commit -m "what you did" '
-' git push '
+    - ' git add . '
+    - ' git commit -m "what you did" '
+    - ' git push '
 
 Each time you start to work on the project again, DON'T FORGET to type:
-' git pull '
+    - ' git pull '
 
 # Bases de données
 Course given at the Faculté des sciences économiques of the Université de Neuchâtel
