@@ -10,5 +10,5 @@ USE swiss_vibes;
 
 DROP TABLE IF EXISTS personne;
 CREATE TABLE personne (
-    
+    bla bla
 )
