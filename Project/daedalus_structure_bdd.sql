@@ -288,11 +288,6 @@ CREATE TABLE clip_video (
     PRIMARY KEY (id_video_clip)
 );
 
-ALTER TABLE clip_video
-    ADD CONSTRAINT fk_clip_video_contenu_audio
-    FOREIGN KEY (id_contenu)
-    REFERENCES contenu_audio (id_contenu);
-
 DROP TABLE IF EXISTS genre;
 CREATE TABLE genre (
     id_genre INT NOT NULL,
