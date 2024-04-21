@@ -255,6 +255,16 @@ ALTER TABLE chanson
     FOREIGN KEY (id_contenu)
     REFERENCES contenu_audio (id_contenu);
 
+ALTER TABLE chanson
+    ADD CONSTRAINT fk_chanson_album
+    FOREIGN KEY (id_album)
+    REFERENCES album (id_album);
+
+ALTER TABLE chanson
+    ADD CONSTRAINT fk_chanson_playlist
+    FOREIGN KEY (id_playlist)
+    REFERENCES playlist (id_playlist);
+
 DROP TABLE IF EXISTS album;
 CREATE TABLE album (
     id_album INT NOT NULL,
@@ -277,6 +287,11 @@ CREATE TABLE clip_video (
     duree TIME NOT NULL, 
     PRIMARY KEY (id_video_clip)
 );
+
+ALTER TABLE clip_video
+    ADD CONSTRAINT fk_clip_video_contenu_audio
+    FOREIGN KEY (id_contenu)
+    REFERENCES contenu_audio (id_contenu);
 
 DROP TABLE IF EXISTS genre;
 CREATE TABLE genre (
@@ -336,5 +351,3 @@ ALTER TABLE favori
     ADD CONSTRAINT fk_favori_utilisateur
     FOREIGN KEY (id_personne)
     REFERENCES utilisateur (id_personne);
-
--- TO DO? aggregations between video clip, album, playlist?
