@@ -21,9 +21,10 @@ CREATE TABLE personne (
 
 DROP TABLE IF EXISTS artiste;
 CREATE TABLE artiste (
-    id_personne INT NOT NULL, 
+    id_artiste INT NOT NULL, 
     biographie VARCHAR(2000) NOT NULL, 
-    PRIMARY KEY (id_personne)
+    id_label INT NOT NULL, 
+    PRIMARY KEY (id_artiste)
 );
 
 ALTER TABLE artiste
@@ -33,8 +34,8 @@ ALTER TABLE artiste
 
 DROP TABLE IF EXISTS utilisateur;
 CREATE TABLE utilisateur (
-    id_personne INT NOT NULL,  
-    PRIMARY KEY (id_personne)
+    id_utilisateur INT NOT NULL,  
+    PRIMARY KEY (id_utilisateur)
 );
 
 ALTER TABLE utilisateur
@@ -49,20 +50,8 @@ CREATE TABLE label (
     PRIMARY KEY (id_label)
 );
 
-DROP TABLE IF EXISTS representation;
-CREATE TABLE representation (
-    id_personne INT NOT NULL, 
-    id_label INT NOT NULL, 
-    PRIMARY KEY (id_personne, id_label)
-);
-
-ALTER TABLE representation
-    ADD CONSTRAINT fk_representation_artiste
-    FOREIGN KEY (id_personne)
-    REFERENCES artiste(id_personne);
-
-ALTER TABLE representation
-    ADD CONSTRAINT fk_representation_label
+ALTER TABLE artiste
+    ADD CONSTRAINT fk_label_artiste
     FOREIGN KEY (id_label)
     REFERENCES label(id_label);
 
@@ -76,7 +65,7 @@ CREATE TABLE evenement (
 
 DROP TABLE IF EXISTS participation;
 CREATE TABLE participation (
-    id_personne INT NOT NULL, 
+    id_artiste INT NOT NULL, 
     id_evenement INT NOT NULL, 
     PRIMARY KEY (id_personne, id_evenement)
 );
@@ -88,27 +77,29 @@ ALTER TABLE participation
 
 ALTER TABLE participation
     ADD CONSTRAINT fk_participation_artiste
-    FOREIGN KEY (id_personne)
-    REFERENCES artiste(id_personne);
+    FOREIGN KEY (id_artiste)
+    REFERENCES artiste(id_artiste);
 
 DROP TABLE IF EXISTS produits_derives;
 CREATE TABLE produits_derives (
     id_produits_derives INT NOT NULL, 
     description_produits VARCHAR(2000) NOT NULL, 
+    prix FLOAT NOT NULL,
+    link VARCHAR(512) NOT NULL,
     PRIMARY KEY (id_produits_derives)
 );
 
 DROP TABLE IF EXISTS vente;
 CREATE TABLE vente (
-    id_personne INT NOT NULL, 
+    id_artiste INT NOT NULL, 
     id_produits_derives INT NOT NULL, 
-    PRIMARY KEY (id_personne, id_produits_derives)
+    PRIMARY KEY (id_artiste, id_produits_derives)
 );
 
 ALTER TABLE vente
     ADD CONSTRAINT fk_vente_artiste
-    FOREIGN KEY (id_personne)
-    REFERENCES artiste(id_personne);
+    FOREIGN KEY (id_artiste)
+    REFERENCES artiste(id_artiste);
 
 ALTER TABLE vente
     ADD CONSTRAINT fk_vente_produits_derives
@@ -117,20 +108,21 @@ ALTER TABLE vente
 
 DROP TABLE IF EXISTS artiste_favori;
 CREATE TABLE artiste_favori (
-    id_personne INT NOT NULL, -- why is there 2 id_personne? sure bc there's the same ids for the two classes but should we put them both?
-    id_personne INT NOT NULL, 
-    PRIMARY KEY (id_personne, id_personne)
+    id_utilisateur INT NOT NULL, -- why is there 2 id_personne? sure bc there's the same ids for the two classes but should we put them both?
+    id_artiste INT NOT NULL, 
+    rating INT NOT NULL,
+    PRIMARY KEY (id_utilisateur, id_artiste)
 );
 
 ALTER TABLE artiste_favori
     ADD CONSTRAINT fk_artiste_favori_artiste
-    FOREIGN KEY (id_personne)
-    REFERENCES artiste (id_personne);
+    FOREIGN KEY (id_artiste)
+    REFERENCES artiste (id_artiste);
 
 ALTER TABLE artiste_favori
     ADD CONSTRAINT fk_artiste_favori_utilisateur
-    FOREIGN KEY (id_personne)
-    REFERENCES utilisateur (id_personne);
+    FOREIGN KEY (id_utilisateur)
+    REFERENCES utilisateur (id_utilisateur);
 
 DROP TABLE IF EXISTS abonnement;
 CREATE TABLE abonnement (
@@ -138,48 +130,13 @@ CREATE TABLE abonnement (
     prix INT NOT NULL, 
     nom VARCHAR(64) NOT NULL,
     description_abonnement VARCHAR(2000) NOT NULL, 
-    id_personne INT NOT NULL,
     PRIMARY KEY (id_abonnement)
 );
 
 ALTER TABLE abonnement
     ADD CONSTRAINT fk_abonnement_utilisateur
-    FOREIGN KEY (id_personne)
-    REFERENCES utilisateur (id_personne);
-
-DROP TABLE IF EXISTS remuneration;
-CREATE TABLE remuneration (
-    id_personne INT NOT NULL, 
-    id_abonnement INT NOT NULL, 
-    PRIMARY KEY (id_personne, id_abonnement)
-);
-
-ALTER TABLE remuneration
-    ADD CONSTRAINT fk_remuneration_artiste
-    FOREIGN KEY (id_personne)
-    REFERENCES artiste (id_personne);
-
-ALTER TABLE remuneration
-    ADD CONSTRAINT fk_remuneration_abonnement
-    FOREIGN KEY (id_abonnement)
-    REFERENCES abonnement (id_abonnement);
-
-DROP TABLE IF EXISTS verification;
-CREATE TABLE verification (
-    id_personne INT NOT NULL, 
-    id_abonnement INT NOT NULL, 
-    PRIMARY KEY (id_personne, id_abonnement)
-);
-
-ALTER TABLE verification
-    ADD CONSTRAINT fk_verification_abonnement
-    FOREIGN KEY (id_abonnement)
-    REFERENCES personne (id_abonnement);
-
-ALTER TABLE verification
-    ADD CONSTRAINT fk_verification_utilisateur
-    FOREIGN KEY (id_personne)
-    REFERENCES utilisateur (id_personne);
+    FOREIGN KEY (id_utilisateur)
+    REFERENCES utilisateur (id_utilisateur);
 
 DROP TABLE IF EXISTS langage;
 CREATE TABLE langage (
@@ -190,15 +147,15 @@ CREATE TABLE langage (
 
 DROP TABLE IF EXISTS langue_utilisateur;
 CREATE TABLE langue_utilisateur (
-    id_personne INT NOT NULL, 
+    id_utilisateur INT NOT NULL, 
     id_langage INT NOT NULL, 
-    PRIMARY KEY (id_personne, id_langage)
+    PRIMARY KEY (id_utilisateur, id_langage)
 );
 
 ALTER TABLE langue_utilisateur
     ADD CONSTRAINT fk_langue_utilisateur_utilisateur
-    FOREIGN KEY (id_personne)
-    REFERENCES utilisateur (id_personne);
+    FOREIGN KEY (id_utilisateur)
+    REFERENCES utilisateur (id_utilisateur);
 
 ALTER TABLE langue_utilisateur
     ADD CONSTRAINT fk_langue_utilisateur_langage
@@ -211,26 +168,51 @@ CREATE TABLE contenu_audio (
     duree TIME NOT NULL, 
     date_de_sortie DATE NOT NULL, 
     paroles DATE NOT NULL,
+    id_video_clip INT NOT NULL,
     PRIMARY KEY (id_contenu)
 );
 
 DROP TABLE IF EXISTS credits;
 CREATE TABLE credits (
-    id_personne INT NOT NULL,
-    id_contenu INT NOT NULL, 
-    type_artiste VARCHAR(64) NOT NULL, 
-    PRIMARY KEY (id_personne, id_contenu)
+    id_credits INT NOT NULL, 
+    id_artiste INT NOT NULL,
+    id_contenu INT NOT NULL,  
+    PRIMARY KEY (id_artiste, id_contenu)
 );
 
 ALTER TABLE credits
     ADD CONSTRAINT fk_credits_artiste
-    FOREIGN KEY (id_personne)
-    REFERENCES artiste (id_personne);
+    FOREIGN KEY (id_artiste)
+    REFERENCES artiste (id_artiste);
 
 ALTER TABLE credits
     ADD CONSTRAINT fk_credits_contenu_audio
     FOREIGN KEY (id_contenu)
     REFERENCES contenu_audio (id_contenu);
+
+DROP TABLE IF EXISTS type_artiste;
+CREATE TABLE type_artiste (
+    id_type_artiste INT NOT NULL,
+    type_artiste VARCHAR(64) NOT NULL,
+    PRIMARY KEY (id_type_artiste, type_artiste)
+);
+
+DROP TABLE IF EXISTS mentionne;
+CREATE TABLE mentionne (
+    id_credits INT NOT NULL,
+    id_type_artiste INT NOT NULL,
+    PRIMARY KEY (id_credit, id_type_artiste)
+);
+
+ALTER TABLE mentionne
+    ADD CONSTRAINT fk_mentionne_credits
+    FOREIGN KEY (id_credits)
+    REFERENCES credits (id_credits);
+
+ALTER TABLE mentionne
+    ADD CONSTRAINT fk_mentionne_type_artiste
+    FOREIGN KEY (id_type_artiste)
+    REFERENCES type_artiste (id_type_artiste);
 
 DROP TABLE IF EXISTS podcast;
 CREATE TABLE podcast (
@@ -242,6 +224,8 @@ CREATE TABLE podcast (
 DROP TABLE IF EXISTS chanson;
 CREATE TABLE chanson (
     id_contenu INT NOT NULL, 
+    id_album INT NOT NULL, 
+    id_playlist INT NOT NULL,
     PRIMARY KEY (id_contenu)
 );
 
@@ -270,7 +254,7 @@ CREATE TABLE album (
     id_album INT NOT NULL,
     titre VARCHAR(64) NOT NULL, 
     date_de_sortie DATE NOT NULL, 
-    PRIMARY KEY (id_personne, id_contenu)
+    PRIMARY KEY (id_album)
 );
 
 DROP TABLE IF EXISTS playlist;
@@ -287,6 +271,11 @@ CREATE TABLE clip_video (
     duree TIME NOT NULL, 
     PRIMARY KEY (id_video_clip)
 );
+
+ALTER TABLE contenu_audio
+    ADD CONSTRAINT fk_clip_video_contenu_audio
+    FOREIGN KEY (id_video_clip)
+    REFERENCES clip_video (id_video_clip);
 
 DROP TABLE IF EXISTS genre;
 CREATE TABLE genre (
@@ -332,9 +321,9 @@ ALTER TABLE parle
 DROP TABLE IF EXISTS favori;
 CREATE TABLE favori (
     id_contenu INT NOT NULL, 
-    id_personne INT NOT NULL,
-    favori BOOLEAN NOT NULL,
-    PRIMARY KEY (id_contenu, id_personne)
+    id_utilisateur INT NOT NULL,
+    favori INT NOT NULL,
+    PRIMARY KEY (id_contenu, id_utilisateur)
 );
 
 ALTER TABLE favori
@@ -344,5 +333,5 @@ ALTER TABLE favori
 
 ALTER TABLE favori
     ADD CONSTRAINT fk_favori_utilisateur
-    FOREIGN KEY (id_personne)
-    REFERENCES utilisateur (id_personne);
+    FOREIGN KEY (id_utilisateur)
+    REFERENCES utilisateur (id_utilisateur);
