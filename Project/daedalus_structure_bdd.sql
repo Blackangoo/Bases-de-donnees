@@ -86,7 +86,7 @@ CREATE TABLE label (
 ALTER TABLE artiste
     ADD CONSTRAINT fk_label_artiste
     FOREIGN KEY (id_label)
-    REFERENCES label(id_label);
+    REFERENCES label (id_label);
 
 -- ########################################################
 
@@ -121,7 +121,7 @@ CREATE TABLE participation (
 ALTER TABLE participation
     ADD CONSTRAINT fk_participation_evenement
     FOREIGN KEY (id_evenement)
-    REFERENCES evenement(id_evenement);
+    REFERENCES evenement (id_evenement);
 
 --
 -- Création de la contrainte de clé étrangère
@@ -130,7 +130,7 @@ ALTER TABLE participation
 ALTER TABLE participation
     ADD CONSTRAINT fk_participation_artiste
     FOREIGN KEY (id_artiste)
-    REFERENCES artiste(id_artiste);
+    REFERENCES artiste (id_artiste);
 
 -- ########################################################
 
@@ -166,7 +166,7 @@ CREATE TABLE vente (
 ALTER TABLE vente
     ADD CONSTRAINT fk_vente_artiste
     FOREIGN KEY (id_artiste)
-    REFERENCES artiste(id_artiste);
+    REFERENCES artiste (id_artiste);
 
 --
 -- Création de la contrainte de clé étrangère
@@ -175,12 +175,13 @@ ALTER TABLE vente
 ALTER TABLE vente
     ADD CONSTRAINT fk_vente_produits_derives
     FOREIGN KEY (id_produits_derives)
-    REFERENCES produits_derives(id_produits_derives);
+    REFERENCES produits_derives (id_produits_derives);
 
 -- ########################################################
 
 --
 -- Structure pour la table 'artiste_favori'
+--      relation classe-association entre 'utilisateur' et 'artiste' en trois tables et deux contraintes de clé étrangère
 --
 
 DROP TABLE IF EXISTS artiste_favori;
@@ -191,10 +192,18 @@ CREATE TABLE artiste_favori (
     PRIMARY KEY (id_utilisateur, id_artiste)
 );
 
+--
+-- Création de la contrainte de clé étrangère
+--
+
 ALTER TABLE artiste_favori
     ADD CONSTRAINT fk_artiste_favori_artiste
     FOREIGN KEY (id_artiste)
     REFERENCES artiste (id_artiste);
+
+--
+-- Création de la contrainte de clé étrangère
+--
 
 ALTER TABLE artiste_favori
     ADD CONSTRAINT fk_artiste_favori_utilisateur
