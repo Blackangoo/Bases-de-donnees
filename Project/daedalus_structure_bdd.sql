@@ -8,6 +8,13 @@ USE swiss_vibes;
 
 -- Suppression et création des tables ainsi que leurs colonnes
 
+-- ########################################################
+
+--
+-- Structure pour la table 'personne'
+--      'artiste' et 'utilisateur' en héritent avec une transformation par distinction
+--
+
 DROP TABLE IF EXISTS personne;
 CREATE TABLE personne (
     id_personne INT NOT NULL, 
@@ -19,6 +26,10 @@ CREATE TABLE personne (
     PRIMARY KEY (id_personne)
 );
 
+--
+-- Structure pour la table 'artiste'
+--
+
 DROP TABLE IF EXISTS artiste;
 CREATE TABLE artiste (
     id_artiste INT NOT NULL, 
@@ -27,10 +38,18 @@ CREATE TABLE artiste (
     PRIMARY KEY (id_artiste)
 );
 
+--
+-- Création de la contrainte de clé étrangère
+--
+
 ALTER TABLE artiste
     ADD CONSTRAINT fk_artiste_personne
-    FOREIGN KEY (id_personne)
+    FOREIGN KEY (id_artiste)
     REFERENCES personne (id_personne);
+
+--
+-- Structure pour la table 'utilisateur'
+--
 
 DROP TABLE IF EXISTS utilisateur;
 CREATE TABLE utilisateur (
@@ -38,10 +57,16 @@ CREATE TABLE utilisateur (
     PRIMARY KEY (id_utilisateur)
 );
 
+--
+-- Création de la contrainte de clé étrangère
+--
+
 ALTER TABLE utilisateur
     ADD CONSTRAINT fk_utilisateur_personne
-    FOREIGN KEY (id_personne)
+    FOREIGN KEY (id_utilisateur)
     REFERENCES personne (id_personne);
+
+-- ########################################################
 
 DROP TABLE IF EXISTS label;
 CREATE TABLE label (
