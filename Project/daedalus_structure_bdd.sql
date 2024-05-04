@@ -92,6 +92,7 @@ ALTER TABLE artiste
 
 --
 -- Structure pour la table 'evenement'
+--      relation plusieurs-à-plusieurs entre 'evenement' et 'artiste' en trois tables et deux contraintes de clé étrangère
 --
 
 DROP TABLE IF EXISTS evenement;
@@ -113,10 +114,18 @@ CREATE TABLE participation (
     PRIMARY KEY (id_personne, id_evenement)
 );
 
+--
+-- Création de la contrainte de clé étrangère
+--
+
 ALTER TABLE participation
     ADD CONSTRAINT fk_participation_evenement
     FOREIGN KEY (id_evenement)
     REFERENCES evenement(id_evenement);
+
+--
+-- Création de la contrainte de clé étrangère
+--
 
 ALTER TABLE participation
     ADD CONSTRAINT fk_participation_artiste
@@ -127,6 +136,7 @@ ALTER TABLE participation
 
 --
 -- Structure pour la table 'produits_derives'
+--      relation plusieurs-à-plusieurs entre 'produits_derives' et 'artiste' en trois tables et deux contraintes de clé étrangère
 --
 
 DROP TABLE IF EXISTS produits_derives;
@@ -149,10 +159,18 @@ CREATE TABLE vente (
     PRIMARY KEY (id_artiste, id_produits_derives)
 );
 
+--
+-- Création de la contrainte de clé étrangère
+--
+
 ALTER TABLE vente
     ADD CONSTRAINT fk_vente_artiste
     FOREIGN KEY (id_artiste)
     REFERENCES artiste(id_artiste);
+
+--
+-- Création de la contrainte de clé étrangère
+--
 
 ALTER TABLE vente
     ADD CONSTRAINT fk_vente_produits_derives
@@ -241,6 +259,7 @@ ALTER TABLE langue_utilisateur
 
 --
 -- Structure pour la table 'contenu_audio'
+--      'chanson' et 'podcast' en héritent avec une transformation par distinction
 --
 
 DROP TABLE IF EXISTS contenu_audio;
