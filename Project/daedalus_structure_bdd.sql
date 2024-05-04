@@ -68,6 +68,10 @@ ALTER TABLE utilisateur
 
 -- ########################################################
 
+--
+-- Structure pour la table 'label'
+--
+
 DROP TABLE IF EXISTS label;
 CREATE TABLE label (
     id_label INT NOT NULL, 
@@ -75,10 +79,20 @@ CREATE TABLE label (
     PRIMARY KEY (id_label)
 );
 
+--
+-- Création de la contrainte de clé étrangère
+--
+
 ALTER TABLE artiste
     ADD CONSTRAINT fk_label_artiste
     FOREIGN KEY (id_label)
     REFERENCES label(id_label);
+
+-- ########################################################
+
+--
+-- Structure pour la table 'evenement'
+--
 
 DROP TABLE IF EXISTS evenement;
 CREATE TABLE evenement (
@@ -87,6 +101,10 @@ CREATE TABLE evenement (
     date DATE NOT NULL,
     PRIMARY KEY (id_evenement)
 );
+
+--
+-- Structure pour la table 'participation'
+--
 
 DROP TABLE IF EXISTS participation;
 CREATE TABLE participation (
@@ -105,6 +123,12 @@ ALTER TABLE participation
     FOREIGN KEY (id_artiste)
     REFERENCES artiste(id_artiste);
 
+-- ########################################################
+
+--
+-- Structure pour la table 'produits_derives'
+--
+
 DROP TABLE IF EXISTS produits_derives;
 CREATE TABLE produits_derives (
     id_produits_derives INT NOT NULL, 
@@ -113,6 +137,10 @@ CREATE TABLE produits_derives (
     link VARCHAR(512) NOT NULL,
     PRIMARY KEY (id_produits_derives)
 );
+
+--
+-- Structure pour la table 'vente'
+--
 
 DROP TABLE IF EXISTS vente;
 CREATE TABLE vente (
@@ -131,9 +159,15 @@ ALTER TABLE vente
     FOREIGN KEY (id_produits_derives)
     REFERENCES produits_derives(id_produits_derives);
 
+-- ########################################################
+
+--
+-- Structure pour la table 'artiste_favori'
+--
+
 DROP TABLE IF EXISTS artiste_favori;
 CREATE TABLE artiste_favori (
-    id_utilisateur INT NOT NULL, -- why is there 2 id_personne? sure bc there's the same ids for the two classes but should we put them both?
+    id_utilisateur INT NOT NULL,
     id_artiste INT NOT NULL, 
     rating INT NOT NULL,
     PRIMARY KEY (id_utilisateur, id_artiste)
@@ -149,6 +183,12 @@ ALTER TABLE artiste_favori
     FOREIGN KEY (id_utilisateur)
     REFERENCES utilisateur (id_utilisateur);
 
+-- ########################################################
+
+--
+-- Structure pour la table 'abonnement'
+--
+
 DROP TABLE IF EXISTS abonnement;
 CREATE TABLE abonnement (
     id_abonnement INT NOT NULL, 
@@ -163,12 +203,22 @@ ALTER TABLE abonnement
     FOREIGN KEY (id_utilisateur)
     REFERENCES utilisateur (id_utilisateur);
 
+-- ########################################################
+
+--
+-- Structure pour la table 'langage'
+--
+
 DROP TABLE IF EXISTS langage;
 CREATE TABLE langage (
     id_langage INT NOT NULL, 
     langue VARCHAR(64) NOT NULL, 
     PRIMARY KEY (id_langage)
 );
+
+--
+-- Structure pour la table 'langue_utilisateur'
+--
 
 DROP TABLE IF EXISTS langue_utilisateur;
 CREATE TABLE langue_utilisateur (
@@ -187,6 +237,12 @@ ALTER TABLE langue_utilisateur
     FOREIGN KEY (id_langage)
     REFERENCES langage (id_langage);
 
+-- ########################################################
+
+--
+-- Structure pour la table 'contenu_audio'
+--
+
 DROP TABLE IF EXISTS contenu_audio;
 CREATE TABLE contenu_audio (
     id_contenu VARCHAR(2000) NOT NULL, 
@@ -196,6 +252,10 @@ CREATE TABLE contenu_audio (
     id_video_clip INT NOT NULL,
     PRIMARY KEY (id_contenu)
 );
+
+--
+-- Structure pour la table 'credits'
+--
 
 DROP TABLE IF EXISTS credits;
 CREATE TABLE credits (
@@ -215,12 +275,20 @@ ALTER TABLE credits
     FOREIGN KEY (id_contenu)
     REFERENCES contenu_audio (id_contenu);
 
+--
+-- Structure pour la table 'type_artiste'
+--
+
 DROP TABLE IF EXISTS type_artiste;
 CREATE TABLE type_artiste (
     id_type_artiste INT NOT NULL,
     type_artiste VARCHAR(64) NOT NULL,
     PRIMARY KEY (id_type_artiste, type_artiste)
 );
+
+--
+-- Structure pour la table 'mentionne'
+--
 
 DROP TABLE IF EXISTS mentionne;
 CREATE TABLE mentionne (
@@ -239,12 +307,22 @@ ALTER TABLE mentionne
     FOREIGN KEY (id_type_artiste)
     REFERENCES type_artiste (id_type_artiste);
 
+-- ########################################################
+
+--
+-- Structure pour la table 'podcast'
+--
+
 DROP TABLE IF EXISTS podcast;
 CREATE TABLE podcast (
     id_contenu INT NOT NULL, 
     description_podcast VARCHAR(2000) NOT NULL, 
     PRIMARY KEY (id_contenu)
 );
+
+--
+-- Structure pour la table 'chanson'
+--
 
 DROP TABLE IF EXISTS chanson;
 CREATE TABLE chanson (
@@ -274,6 +352,10 @@ ALTER TABLE chanson
     FOREIGN KEY (id_playlist)
     REFERENCES playlist (id_playlist);
 
+--
+-- Structure pour la table 'album'
+--
+
 DROP TABLE IF EXISTS album;
 CREATE TABLE album (
     id_album INT NOT NULL,
@@ -282,12 +364,20 @@ CREATE TABLE album (
     PRIMARY KEY (id_album)
 );
 
+--
+-- Structure pour la table 'playlist'
+--
+
 DROP TABLE IF EXISTS playlist;
 CREATE TABLE playlist (
     id_playlist INT NOT NULL,
     nom VARCHAR(64) NOT NULL, 
     PRIMARY KEY (id_playlist)
 );
+
+--
+-- Structure pour la table 'clip_video'
+--
 
 DROP TABLE IF EXISTS clip_video;
 CREATE TABLE clip_video (
@@ -302,12 +392,20 @@ ALTER TABLE contenu_audio
     FOREIGN KEY (id_video_clip)
     REFERENCES clip_video (id_video_clip);
 
+--
+-- Structure pour la table 'genre'
+--
+
 DROP TABLE IF EXISTS genre;
 CREATE TABLE genre (
     id_genre INT NOT NULL,
     genre VARCHAR(64) NOT NULL, 
     PRIMARY KEY (id_genre)
 );
+
+--
+-- Structure pour la table 'decrit'
+--
 
 DROP TABLE IF EXISTS decrit;
 CREATE TABLE decrit (
@@ -326,6 +424,10 @@ ALTER TABLE decrit
     FOREIGN KEY (id_genre)
     REFERENCES genre(id_genre);
 
+--
+-- Structure pour la table 'parle'
+--
+
 DROP TABLE IF EXISTS parle;
 CREATE TABLE parle (
     id_contenu INT NOT NULL, 
@@ -342,6 +444,10 @@ ALTER TABLE parle
     ADD CONSTRAINT fk_parle_langage
     FOREIGN KEY (id_langage)
     REFERENCES langage(id_langage);
+
+--
+-- Structure pour la table 'favori'
+--
 
 DROP TABLE IF EXISTS favori;
 CREATE TABLE favori (
