@@ -505,10 +505,12 @@ ALTER TABLE decrit
     FOREIGN KEY (id_genre)
     REFERENCES genre (id_genre);
 
-
+-- ########################################################
 
 --
 -- Structure pour la table 'credits'
+--      relation plusieurs-à-plusieurs entre 'credits' et 'type_artiste' en trois tables et deux contraintes de clé étrangère
+--      relation classe-association entre 'contenu_audio' et 'artiste' en trois tables et deux contraintes de clé étrangère
 --
 
 DROP TABLE IF EXISTS credits;
@@ -516,13 +518,21 @@ CREATE TABLE credits (
     id_credits INT NOT NULL, 
     id_artiste INT NOT NULL,
     id_contenu INT NOT NULL,  
-    PRIMARY KEY (id_artiste, id_contenu)
+    PRIMARY KEY (id_credits)
 );
+
+--
+-- Création de la contrainte de clé étrangère
+--
 
 ALTER TABLE credits
     ADD CONSTRAINT fk_credits_artiste
     FOREIGN KEY (id_artiste)
     REFERENCES artiste (id_artiste);
+
+--
+-- Création de la contrainte de clé étrangère
+--
 
 ALTER TABLE credits
     ADD CONSTRAINT fk_credits_contenu_audio
@@ -537,7 +547,7 @@ DROP TABLE IF EXISTS type_artiste;
 CREATE TABLE type_artiste (
     id_type_artiste INT NOT NULL,
     type_artiste VARCHAR(64) NOT NULL,
-    PRIMARY KEY (id_type_artiste, type_artiste)
+    PRIMARY KEY (id_type_artiste)
 );
 
 --
@@ -548,13 +558,21 @@ DROP TABLE IF EXISTS mentionne;
 CREATE TABLE mentionne (
     id_credits INT NOT NULL,
     id_type_artiste INT NOT NULL,
-    PRIMARY KEY (id_credit, id_type_artiste)
+    PRIMARY KEY (id_credits, id_type_artiste)
 );
+
+--
+-- Création de la contrainte de clé étrangère
+--
 
 ALTER TABLE mentionne
     ADD CONSTRAINT fk_mentionne_credits
     FOREIGN KEY (id_credits)
     REFERENCES credits (id_credits);
+
+--
+-- Création de la contrainte de clé étrangère
+--
 
 ALTER TABLE mentionne
     ADD CONSTRAINT fk_mentionne_type_artiste
