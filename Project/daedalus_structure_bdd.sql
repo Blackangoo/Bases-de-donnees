@@ -111,7 +111,7 @@ DROP TABLE IF EXISTS participation;
 CREATE TABLE participation (
     id_artiste INT NOT NULL, 
     id_evenement INT NOT NULL, 
-    PRIMARY KEY (id_personne, id_evenement)
+    PRIMARY KEY (id_artiste, id_evenement)
 );
 
 --
@@ -214,6 +214,7 @@ ALTER TABLE artiste_favori
 
 --
 -- Structure pour la table 'abonnement'
+--      relation un-à-plusieurs entre 'abonnement' et 'utilisateur' en deux tables et une contrainte de clé étrangère
 --
 
 DROP TABLE IF EXISTS abonnement;
@@ -225,8 +226,166 @@ CREATE TABLE abonnement (
     PRIMARY KEY (id_abonnement)
 );
 
-ALTER TABLE abonnement
+--
+-- Création de la contrainte de clé étrangère
+--
+
+ALTER TABLE utilisateur
     ADD CONSTRAINT fk_abonnement_utilisateur
+    FOREIGN KEY (id_abonnement)
+    REFERENCES abonnement (id_abonnement);
+
+--
+-- Structure pour la table 'clip_video'
+--
+
+DROP TABLE IF EXISTS clip_video;
+CREATE TABLE clip_video (
+    id_video_clip INT NOT NULL,
+    animation BOOLEAN NOT NULL, 
+    duree TIME NOT NULL, 
+    PRIMARY KEY (id_video_clip)
+);
+
+-- ########################################################
+
+--
+-- Structure pour la table 'contenu_audio'
+--      'chanson' et 'podcast' en héritent avec une transformation par distinction
+--      relation un-à-plusieurs entre 'clip_video' et 'contenu_audio' en deux tables et une contrainte de clé étrangère
+--      relation plusieurs-à-plusieurs entre 'contenu_audio' et 'utilisateur' en trois tables et deux contraintes de clé étrangère
+--
+
+DROP TABLE IF EXISTS contenu_audio;
+CREATE TABLE contenu_audio (
+    id_contenu VARCHAR(2000) NOT NULL, 
+    duree TIME NOT NULL, 
+    date_de_sortie DATE NOT NULL, 
+    paroles DATE NOT NULL,
+    id_video_clip INT NOT NULL,
+    PRIMARY KEY (id_contenu)
+);
+
+--
+-- Structure pour la table 'podcast'
+--
+
+DROP TABLE IF EXISTS podcast;
+CREATE TABLE podcast (
+    id_contenu INT NOT NULL, 
+    description_podcast VARCHAR(2000) NOT NULL, 
+    PRIMARY KEY (id_contenu)
+);
+
+--
+-- Création de la contrainte de clé étrangère
+--
+
+ALTER TABLE podcast
+    ADD CONSTRAINT fk_podcast_contenu_audio
+    FOREIGN KEY (id_contenu)
+    REFERENCES contenu_audio (id_contenu);
+
+--
+-- Structure pour la table 'chanson'
+-- relation d’agrégation entre 'chanson' et 'album' en deux tables et une contrainte de clé étrangère
+-- relation d’agrégation entre 'chanson' et 'playlist' en deux tables et une contrainte de clé étrangère
+--
+
+DROP TABLE IF EXISTS chanson;
+CREATE TABLE chanson (
+    id_contenu INT NOT NULL, 
+    id_album INT NOT NULL, 
+    id_playlist INT NOT NULL,
+    PRIMARY KEY (id_contenu)
+);
+
+--
+-- Création de la contrainte de clé étrangère
+--
+
+ALTER TABLE chanson
+    ADD CONSTRAINT fk_chanson_contenu_audio
+    FOREIGN KEY (id_contenu)
+    REFERENCES contenu_audio (id_contenu);
+
+--
+-- Création de la contrainte de clé étrangère
+--
+
+ALTER TABLE contenu_audio
+    ADD CONSTRAINT fk_clip_video_contenu_audio
+    FOREIGN KEY (id_video_clip)
+    REFERENCES clip_video (id_video_clip);
+
+--
+-- Structure pour la table 'album'
+--
+
+DROP TABLE IF EXISTS album;
+CREATE TABLE album (
+    id_album INT NOT NULL,
+    titre VARCHAR(64) NOT NULL, 
+    date_de_sortie DATE NOT NULL, 
+    PRIMARY KEY (id_album)
+);
+
+--
+-- Structure pour la table 'playlist'
+--
+
+DROP TABLE IF EXISTS playlist;
+CREATE TABLE playlist (
+    id_playlist INT NOT NULL,
+    nom VARCHAR(64) NOT NULL, 
+    PRIMARY KEY (id_playlist)
+);
+
+--
+-- Création de la contrainte de clé étrangère
+--
+
+ALTER TABLE chanson
+    ADD CONSTRAINT fk_chanson_album
+    FOREIGN KEY (id_album)
+    REFERENCES album (id_album);
+
+--
+-- Création de la contrainte de clé étrangère
+--
+
+ALTER TABLE chanson
+    ADD CONSTRAINT fk_chanson_playlist
+    FOREIGN KEY (id_playlist)
+    REFERENCES playlist (id_playlist);
+
+--
+-- Structure pour la table 'favori'
+--
+
+DROP TABLE IF EXISTS favori;
+CREATE TABLE favori (
+    id_contenu INT NOT NULL, 
+    id_utilisateur INT NOT NULL,
+    favori INT NOT NULL,
+    PRIMARY KEY (id_contenu, id_utilisateur)
+);
+
+--
+-- Création de la contrainte de clé étrangère
+--
+
+ALTER TABLE favori
+    ADD CONSTRAINT fk_favori_contenu_audio
+    FOREIGN KEY (id_contenu)
+    REFERENCES contenu_audio (id_contenu_audio);
+
+--
+-- Création de la contrainte de clé étrangère
+--
+
+ALTER TABLE favori
+    ADD CONSTRAINT fk_favori_utilisateur
     FOREIGN KEY (id_utilisateur)
     REFERENCES utilisateur (id_utilisateur);
 
@@ -234,6 +393,8 @@ ALTER TABLE abonnement
 
 --
 -- Structure pour la table 'langage'
+--      relation plusieurs-à-plusieurs entre 'langage' et 'utilisateur' en trois tables et deux contraintes de clé étrangère
+--      relation plusieurs-à-plusieurs entre 'langage' et 'contenu_audio' en trois tables et deux contraintes de clé étrangère
 --
 
 DROP TABLE IF EXISTS langage;
@@ -254,32 +415,97 @@ CREATE TABLE langue_utilisateur (
     PRIMARY KEY (id_utilisateur, id_langage)
 );
 
+--
+-- Création de la contrainte de clé étrangère
+--
+
 ALTER TABLE langue_utilisateur
     ADD CONSTRAINT fk_langue_utilisateur_utilisateur
     FOREIGN KEY (id_utilisateur)
     REFERENCES utilisateur (id_utilisateur);
+
+--
+-- Création de la contrainte de clé étrangère
+--
 
 ALTER TABLE langue_utilisateur
     ADD CONSTRAINT fk_langue_utilisateur_langage
     FOREIGN KEY (id_langage)
     REFERENCES langage (id_langage);
 
+--
+-- Structure pour la table 'parle'
+--
+
+DROP TABLE IF EXISTS parle;
+CREATE TABLE parle (
+    id_contenu INT NOT NULL, 
+    id_langage INT NOT NULL,
+    PRIMARY KEY (id_contenu, id_langage)
+);
+
+--
+-- Création de la contrainte de clé étrangère
+--
+
+ALTER TABLE parle
+    ADD CONSTRAINT fk_parle_contenu_audio
+    FOREIGN KEY (id_contenu)
+    REFERENCES contenu_audio (id_contenu);
+
+--
+-- Création de la contrainte de clé étrangère
+--
+
+ALTER TABLE parle
+    ADD CONSTRAINT fk_parle_langage
+    FOREIGN KEY (id_langage)
+    REFERENCES langage (id_langage);
+
 -- ########################################################
 
 --
--- Structure pour la table 'contenu_audio'
---      'chanson' et 'podcast' en héritent avec une transformation par distinction
+-- Structure pour la table 'genre'
+--      relation plusieurs-à-plusieurs entre 'genre' et 'contenu_audio' en trois tables et deux contraintes de clé étrangère
 --
 
-DROP TABLE IF EXISTS contenu_audio;
-CREATE TABLE contenu_audio (
-    id_contenu VARCHAR(2000) NOT NULL, 
-    duree TIME NOT NULL, 
-    date_de_sortie DATE NOT NULL, 
-    paroles DATE NOT NULL,
-    id_video_clip INT NOT NULL,
-    PRIMARY KEY (id_contenu)
+DROP TABLE IF EXISTS genre;
+CREATE TABLE genre (
+    id_genre INT NOT NULL,
+    genre VARCHAR(64) NOT NULL, 
+    PRIMARY KEY (id_genre)
 );
+
+--
+-- Structure pour la table 'decrit'
+--
+
+DROP TABLE IF EXISTS decrit;
+CREATE TABLE decrit (
+    id_contenu INT NOT NULL, 
+    id_genre INT NOT NULL,
+    PRIMARY KEY (id_contenu, id_genre)
+);
+
+--
+-- Création de la contrainte de clé étrangère
+--
+
+ALTER TABLE decrit
+    ADD CONSTRAINT fk_decrit_contenu_audio
+    FOREIGN KEY (id_contenu)
+    REFERENCES contenu_audio (id_contenu);
+
+--
+-- Création de la contrainte de clé étrangère
+--
+
+ALTER TABLE decrit
+    ADD CONSTRAINT fk_decrit_genre
+    FOREIGN KEY (id_genre)
+    REFERENCES genre (id_genre);
+
+
 
 --
 -- Structure pour la table 'credits'
@@ -334,163 +560,3 @@ ALTER TABLE mentionne
     ADD CONSTRAINT fk_mentionne_type_artiste
     FOREIGN KEY (id_type_artiste)
     REFERENCES type_artiste (id_type_artiste);
-
--- ########################################################
-
---
--- Structure pour la table 'podcast'
---
-
-DROP TABLE IF EXISTS podcast;
-CREATE TABLE podcast (
-    id_contenu INT NOT NULL, 
-    description_podcast VARCHAR(2000) NOT NULL, 
-    PRIMARY KEY (id_contenu)
-);
-
---
--- Structure pour la table 'chanson'
---
-
-DROP TABLE IF EXISTS chanson;
-CREATE TABLE chanson (
-    id_contenu INT NOT NULL, 
-    id_album INT NOT NULL, 
-    id_playlist INT NOT NULL,
-    PRIMARY KEY (id_contenu)
-);
-
-ALTER TABLE podcast
-    ADD CONSTRAINT fk_podcast_contenu_audio
-    FOREIGN KEY (id_contenu)
-    REFERENCES contenu_audio (id_contenu);
-
-ALTER TABLE chanson
-    ADD CONSTRAINT fk_chanson_contenu_audio
-    FOREIGN KEY (id_contenu)
-    REFERENCES contenu_audio (id_contenu);
-
-ALTER TABLE chanson
-    ADD CONSTRAINT fk_chanson_album
-    FOREIGN KEY (id_album)
-    REFERENCES album (id_album);
-
-ALTER TABLE chanson
-    ADD CONSTRAINT fk_chanson_playlist
-    FOREIGN KEY (id_playlist)
-    REFERENCES playlist (id_playlist);
-
---
--- Structure pour la table 'album'
---
-
-DROP TABLE IF EXISTS album;
-CREATE TABLE album (
-    id_album INT NOT NULL,
-    titre VARCHAR(64) NOT NULL, 
-    date_de_sortie DATE NOT NULL, 
-    PRIMARY KEY (id_album)
-);
-
---
--- Structure pour la table 'playlist'
---
-
-DROP TABLE IF EXISTS playlist;
-CREATE TABLE playlist (
-    id_playlist INT NOT NULL,
-    nom VARCHAR(64) NOT NULL, 
-    PRIMARY KEY (id_playlist)
-);
-
---
--- Structure pour la table 'clip_video'
---
-
-DROP TABLE IF EXISTS clip_video;
-CREATE TABLE clip_video (
-    id_video_clip INT NOT NULL,
-    animation BOOLEAN NOT NULL, 
-    duree TIME NOT NULL, 
-    PRIMARY KEY (id_video_clip)
-);
-
-ALTER TABLE contenu_audio
-    ADD CONSTRAINT fk_clip_video_contenu_audio
-    FOREIGN KEY (id_video_clip)
-    REFERENCES clip_video (id_video_clip);
-
---
--- Structure pour la table 'genre'
---
-
-DROP TABLE IF EXISTS genre;
-CREATE TABLE genre (
-    id_genre INT NOT NULL,
-    genre VARCHAR(64) NOT NULL, 
-    PRIMARY KEY (id_genre)
-);
-
---
--- Structure pour la table 'decrit'
---
-
-DROP TABLE IF EXISTS decrit;
-CREATE TABLE decrit (
-    id_contenu INT NOT NULL, 
-    id_genre INT NOT NULL,
-    PRIMARY KEY (id_contenu, id_genre)
-);
-
-ALTER TABLE decrit
-    ADD CONSTRAINT fk_decrit_contenu_audio
-    FOREIGN KEY (id_contenu)
-    REFERENCES contenu_audio(id_contenu);
-
-ALTER TABLE decrit
-    ADD CONSTRAINT fk_decrit_genre
-    FOREIGN KEY (id_genre)
-    REFERENCES genre(id_genre);
-
---
--- Structure pour la table 'parle'
---
-
-DROP TABLE IF EXISTS parle;
-CREATE TABLE parle (
-    id_contenu INT NOT NULL, 
-    id_langage INT NOT NULL,
-    PRIMARY KEY (id_contenu, id_langage)
-);
-
-ALTER TABLE parle
-    ADD CONSTRAINT fk_parle_contenu_audio
-    FOREIGN KEY (id_contenu)
-    REFERENCES contenu_audio(id_contenu);
-
-ALTER TABLE parle
-    ADD CONSTRAINT fk_parle_langage
-    FOREIGN KEY (id_langage)
-    REFERENCES langage(id_langage);
-
---
--- Structure pour la table 'favori'
---
-
-DROP TABLE IF EXISTS favori;
-CREATE TABLE favori (
-    id_contenu INT NOT NULL, 
-    id_utilisateur INT NOT NULL,
-    favori INT NOT NULL,
-    PRIMARY KEY (id_contenu, id_utilisateur)
-);
-
-ALTER TABLE favori
-    ADD CONSTRAINT fk_favori_contenu_audio
-    FOREIGN KEY (id_contenu)
-    REFERENCES contenu_audio (id_contenu_audio);
-
-ALTER TABLE favori
-    ADD CONSTRAINT fk_favori_utilisateur
-    FOREIGN KEY (id_utilisateur)
-    REFERENCES utilisateur (id_utilisateur);
