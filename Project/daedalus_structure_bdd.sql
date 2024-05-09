@@ -54,6 +54,8 @@ ALTER TABLE artiste
 DROP TABLE IF EXISTS utilisateur;
 CREATE TABLE utilisateur (
     id_utilisateur INT NOT NULL,  
+    annee_naissance YEAR,
+    canton_residence CHAR(2),
     PRIMARY KEY (id_utilisateur)
 );
 
