@@ -580,3 +580,91 @@ ALTER TABLE mentionne
     ADD CONSTRAINT fk_mentionne_type_artiste
     FOREIGN KEY (id_type_artiste)
     REFERENCES type_artiste (id_type_artiste);
+
+-- ########################################################
+
+--
+-- Trigger 'favori'
+--
+DROP TRIGGER IF EXISTS before_insert_favori;
+DELIMITER $$
+CREATE TRIGGER before_insert_favori BEFORE INSERT ON favori FOR EACH ROW 
+BEGIN
+    IF NEW.favori < 1 THEN
+        SET NEW.favori = 1;
+    ELSEIF NEW.favori > 5 THEN
+        SET NEW.favori = 5;
+    END IF;
+END
+$$
+DELIMITER ;
+
+--
+-- Trigger 'artiste_favori'
+--
+DROP TRIGGER IF EXISTS before_insert_favori;
+DELIMITER $$
+CREATE TRIGGER before_insert_artiste_favori BEFORE INSERT ON artiste_favori FOR EACH ROW
+BEGIN
+    IF NEW.rating < 1 THEN
+        SET NEW.rating = 1;
+    ELSEIF NEW.rating > 5 THEN
+        SET NEW.rating = 5;
+    END IF;
+END
+$$
+DELIMITER ;
+
+--
+-- Trigger 'artiste'
+--
+DROP TRIGGER IF EXISTS before_delete_artiste;
+
+DELIMITER $$
+
+CREATE TRIGGER before_delete_artiste BEFORE DELETE ON artiste FOR EACH ROW
+
+BEGIN
+    DECLARE count_artists INT;
+    
+    -- COUNT(*) gets the number of lines returned by a request
+    -- Here, it counts how many artists take part at the event and puts it into 'count_artists'
+    SELECT COUNT(*) INTO count_artists
+    FROM participation
+    WHERE id_evenement = (
+        SELECT id_evenement 
+        FROM participation 
+        WHERE id_artiste = OLD.id_artiste
+    );
+    
+--Might be optimised with a JOIN
+
+    -- If the artist we delete is the only one taking part at the event then the event is also deleted
+    IF count_artists = 1 THEN
+        DELETE FROM evenement WHERE id_evenement = (
+            SELECT id_evenement 
+            FROM participation 
+            WHERE id_artiste = OLD.id_artiste
+        );
+    END IF;
+
+    -- The link to the event is deleted
+    DELETE FROM participation WHERE id_artiste = OLD.id_artiste;
+    
+    -- Delete the products of the deleted artist
+    DELETE FROM produits_derives WHERE id_produits_derives = (
+        SELECT id_produits_derives
+        FROM vente
+        WHERE id_artiste = OLD.id_artiste
+    )
+
+    -- The link to the product is deleted
+    DELETE FROM vente WHERE id_artiste = OLD.id_artiste;
+
+    -- Delete artiste_favori as the artist is deleted
+    DELETE FROM artiste_favori WHERE id_artiste = OLD.id_artiste;
+
+    
+END;
+$$
+DELIMITER ;
