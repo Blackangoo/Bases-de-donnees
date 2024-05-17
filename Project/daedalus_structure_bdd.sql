@@ -253,63 +253,23 @@ CREATE TABLE clip_video (
 
 --
 -- Structure pour la table 'contenu_audio'
---      'chanson' et 'podcast' en héritent avec une transformation par distinction
 --      relation un-à-plusieurs entre 'clip_video' et 'contenu_audio' en deux tables et une contrainte de clé étrangère
+--      relation d’agrégation entre 'album' et 'contenu_audio' en deux tables et une contrainte de clé étrangère
 --      relation plusieurs-à-plusieurs entre 'contenu_audio' et 'utilisateur' en trois tables et deux contraintes de clé étrangère
+--      relation plusieurs-à-plusieurs entre 'contenu_audio' et 'playlist' en trois tables et deux contraintes de clé étrangère
 --
 
 DROP TABLE IF EXISTS contenu_audio;
 CREATE TABLE contenu_audio (
-    id_contenu VARCHAR(2000) NOT NULL, 
+    id_contenu INT NOT NULL,
+    titre VARCHAR(2000) NOT NULL, 
     duree TIME NOT NULL, 
     date_de_sortie DATE NOT NULL, 
-    paroles DATE NOT NULL,
+    paroles VARCHAR(2000) NOT NULL,
     id_video_clip INT NOT NULL,
+    id_album INT NOT NULL,
     PRIMARY KEY (id_contenu)
 );
-
---
--- Structure pour la table 'podcast'
---
-
-DROP TABLE IF EXISTS podcast;
-CREATE TABLE podcast (
-    id_contenu INT NOT NULL, 
-    description_podcast VARCHAR(2000) NOT NULL, 
-    PRIMARY KEY (id_contenu)
-);
-
---
--- Création de la contrainte de clé étrangère
---
-
-ALTER TABLE podcast
-    ADD CONSTRAINT fk_podcast_contenu_audio
-    FOREIGN KEY (id_contenu)
-    REFERENCES contenu_audio (id_contenu);
-
---
--- Structure pour la table 'chanson'
--- relation d’agrégation entre 'chanson' et 'album' en deux tables et une contrainte de clé étrangère
--- relation d’agrégation entre 'chanson' et 'playlist' en deux tables et une contrainte de clé étrangère
---
-
-DROP TABLE IF EXISTS chanson;
-CREATE TABLE chanson (
-    id_contenu INT NOT NULL, 
-    id_album INT NOT NULL, 
-    id_playlist INT NOT NULL,
-    PRIMARY KEY (id_contenu)
-);
-
---
--- Création de la contrainte de clé étrangère
---
-
-ALTER TABLE chanson
-    ADD CONSTRAINT fk_chanson_contenu_audio
-    FOREIGN KEY (id_contenu)
-    REFERENCES contenu_audio (id_contenu);
 
 --
 -- Création de la contrainte de clé étrangère
@@ -347,17 +307,37 @@ CREATE TABLE playlist (
 -- Création de la contrainte de clé étrangère
 --
 
-ALTER TABLE chanson
-    ADD CONSTRAINT fk_chanson_album
+ALTER TABLE contenu_audio
+    ADD CONSTRAINT fk_contenu_audio_album
     FOREIGN KEY (id_album)
     REFERENCES album (id_album);
+
+--
+-- Structure pour la table 'appartenance'
+--
+
+DROP TABLE IF EXISTS appartenance
+CREATE TABLE appartenance (
+    id_contenu INT NOT NULL,
+    id_playlist INT NOT NULL,
+    PRIMARY KEY (id_contenu, id_playlist)
+)
 
 --
 -- Création de la contrainte de clé étrangère
 --
 
-ALTER TABLE chanson
-    ADD CONSTRAINT fk_chanson_playlist
+ALTER TABLE appartenance
+    ADD CONSTRAINT fk_appartenance_contenu_audio
+    FOREIGN KEY (id_contenu)
+    REFERENCES contenu_audio (id_contenu);
+
+--
+-- Création de la contrainte de clé étrangère
+--
+
+ALTER TABLE appartenance
+    ADD CONSTRAINT fk_appartenance_playlist
     FOREIGN KEY (id_playlist)
     REFERENCES playlist (id_playlist);
 
@@ -369,7 +349,9 @@ DROP TABLE IF EXISTS favori;
 CREATE TABLE favori (
     id_contenu INT NOT NULL, 
     id_utilisateur INT NOT NULL,
-    favori INT NOT NULL,
+    rating INT NOT NULL,
+    count INT NOT NULL,
+    date_derniere_ecoute DATE NOT NULL,
     PRIMARY KEY (id_contenu, id_utilisateur)
 );
 
@@ -380,7 +362,7 @@ CREATE TABLE favori (
 ALTER TABLE favori
     ADD CONSTRAINT fk_favori_contenu_audio
     FOREIGN KEY (id_contenu)
-    REFERENCES contenu_audio (id_contenu_audio);
+    REFERENCES contenu_audio (id_contenu);
 
 --
 -- Création de la contrainte de clé étrangère
