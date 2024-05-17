@@ -56,6 +56,7 @@ CREATE TABLE utilisateur (
     id_utilisateur INT NOT NULL,  
     annee_naissance YEAR,
     canton_residence CHAR(2),
+    id_abonnement INT NOT NULL,
     PRIMARY KEY (id_utilisateur)
 );
 
@@ -316,7 +317,7 @@ ALTER TABLE contenu_audio
 -- Structure pour la table 'appartenance'
 --
 
-DROP TABLE IF EXISTS appartenance
+DROP TABLE IF EXISTS appartenance;
 CREATE TABLE appartenance (
     id_contenu INT NOT NULL,
     id_playlist INT NOT NULL,
