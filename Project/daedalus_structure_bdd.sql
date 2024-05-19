@@ -322,7 +322,7 @@ CREATE TABLE appartenance (
     id_contenu INT NOT NULL,
     id_playlist INT NOT NULL,
     PRIMARY KEY (id_contenu, id_playlist)
-)
+);
 
 --
 -- Création de la contrainte de clé étrangère
@@ -573,10 +573,10 @@ DROP TRIGGER IF EXISTS before_insert_favori;
 DELIMITER $$
 CREATE TRIGGER before_insert_favori BEFORE INSERT ON favori FOR EACH ROW 
 BEGIN
-    IF NEW.favori < 1 THEN
-        SET NEW.favori = 1;
-    ELSEIF NEW.favori > 5 THEN
-        SET NEW.favori = 5;
+    IF NEW.rating < 1 THEN
+        SET NEW.rating = 1;
+    ELSEIF NEW.rating > 5 THEN
+        SET NEW.rating = 5;
     END IF;
 END
 $$
@@ -585,7 +585,7 @@ DELIMITER ;
 --
 -- Trigger 'artiste_favori'
 --
-DROP TRIGGER IF EXISTS before_insert_favori;
+DROP TRIGGER IF EXISTS before_insert_artiste_favori;
 DELIMITER $$
 CREATE TRIGGER before_insert_artiste_favori BEFORE INSERT ON artiste_favori FOR EACH ROW
 BEGIN
@@ -602,52 +602,85 @@ DELIMITER ;
 -- Trigger 'artiste'
 --
 DROP TRIGGER IF EXISTS before_delete_artiste;
-
 DELIMITER $$
-
 CREATE TRIGGER before_delete_artiste BEFORE DELETE ON artiste FOR EACH ROW
-
 BEGIN
-    DECLARE count_artists INT;
-    
-    -- COUNT(*) gets the number of lines returned by a request
-    -- Here, it counts how many artists take part at the event and puts it into 'count_artists'
-    SELECT COUNT(*) INTO count_artists
-    FROM participation
-    WHERE id_evenement = (
+    -- Delete events with only the current artist participating
+    DELETE FROM evenement 
+    WHERE id_evenement IN (
         SELECT id_evenement 
         FROM participation 
         WHERE id_artiste = OLD.id_artiste
+        GROUP BY id_evenement
+        HAVING COUNT(id_artiste) = 1
     );
-    
---Might be optimised with a JOIN
 
-    -- If the artist we delete is the only one taking part at the event then the event is also deleted
-    IF count_artists = 1 THEN
-        DELETE FROM evenement WHERE id_evenement = (
-            SELECT id_evenement 
-            FROM participation 
-            WHERE id_artiste = OLD.id_artiste
-        );
-    END IF;
-
-    -- The link to the event is deleted
+    -- Delete participations of the artist
     DELETE FROM participation WHERE id_artiste = OLD.id_artiste;
     
-    -- Delete the products of the deleted artist
-    DELETE FROM produits_derives WHERE id_produits_derives = (
-        SELECT id_produits_derives
-        FROM vente
+    -- Delete products of the deleted artist
+    DELETE FROM produits_derives 
+    WHERE id_produits_derives IN (
+        SELECT id_produits_derives 
+        FROM vente 
         WHERE id_artiste = OLD.id_artiste
-    )
+    );
 
-    -- The link to the product is deleted
+    -- Delete links to the products
     DELETE FROM vente WHERE id_artiste = OLD.id_artiste;
 
     -- Delete artiste_favori as the artist is deleted
     DELETE FROM artiste_favori WHERE id_artiste = OLD.id_artiste;
 
+    -- Delete from appartenance 
+    DELETE FROM appartenance
+    WHERE id_contenu IN (
+        SELECT id_contenu
+        FROM credits
+        WHERE id_artiste = OLD.id_artiste
+    );
+
+    -- Delete albums of the deleted artist
+    DELETE FROM album
+    WHERE id_album IN (
+        SELECT id_album
+        FROM contenu_audio
+        WHERE id_contenu IN (
+            SELECT id_contenu
+            FROM credits
+            WHERE id_artiste = OLD.id_artiste
+        )
+    );
+
+    -- Delete clip_video of the deleted artist
+    DELETE FROM clip_video
+    WHERE id_video_clip IN (
+        SELECT id_video_clip
+        FROM contenu_audio
+        WHERE id_contenu IN (
+            SELECT id_contenu
+            FROM credits
+            WHERE id_artiste = OLD.id_artiste
+        )
+    );
     
-END;
+    -- Delete contenu_audio with only the current artist participating
+    DELETE FROM contenu_audio 
+    WHERE id_contenu IN (
+        SELECT id_contenu 
+        FROM credits 
+        WHERE id_artiste = OLD.id_artiste
+        GROUP BY id_contenu
+        HAVING COUNT(id_artiste) = 1
+    );
+
+    -- Delete from credits
+    DELETE FROM credits
+    WHERE id_contenu IN (
+        SELECT id_contenu
+        FROM credits
+        WHERE id_artiste = OLD.id_artiste
+    );
+END
 $$
 DELIMITER ;
