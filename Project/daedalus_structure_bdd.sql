@@ -605,6 +605,9 @@ DROP TRIGGER IF EXISTS before_delete_artiste;
 DELIMITER $$
 CREATE TRIGGER before_delete_artiste BEFORE DELETE ON artiste FOR EACH ROW
 BEGIN
+    -- Delete participations of the artist
+    DELETE FROM participation WHERE id_artiste = OLD.id_artiste;
+
     -- Delete events with only the current artist participating
     DELETE FROM evenement 
     WHERE id_evenement IN (
@@ -614,10 +617,10 @@ BEGIN
         GROUP BY id_evenement
         HAVING COUNT(id_artiste) = 1
     );
-
-    -- Delete participations of the artist
-    DELETE FROM participation WHERE id_artiste = OLD.id_artiste;
     
+    -- Delete links to the products
+    DELETE FROM vente WHERE id_artiste = OLD.id_artiste;
+
     -- Delete products of the deleted artist
     DELETE FROM produits_derives 
     WHERE id_produits_derives IN (
@@ -625,9 +628,6 @@ BEGIN
         FROM vente 
         WHERE id_artiste = OLD.id_artiste
     );
-
-    -- Delete links to the products
-    DELETE FROM vente WHERE id_artiste = OLD.id_artiste;
 
     -- Delete artiste_favori as the artist is deleted
     DELETE FROM artiste_favori WHERE id_artiste = OLD.id_artiste;
@@ -638,6 +638,27 @@ BEGIN
         SELECT id_contenu
         FROM credits
         WHERE id_artiste = OLD.id_artiste
+    );
+
+    -- Delete from mentionne
+    DELETE FROM mentionne 
+    WHERE id_credits IN (
+        SELECT id_credits
+        FROM credits
+        WHERE id_artiste = OLD.id_artiste
+    );
+
+    -- Delete from credits
+    DELETE FROM credits WHERE id_artiste = OLD.id_artiste;
+
+    -- Delete contenu_audio with only the current artist participating
+    DELETE FROM contenu_audio 
+    WHERE id_contenu IN (
+        SELECT id_contenu 
+        FROM credits 
+        WHERE id_artiste = OLD.id_artiste
+        GROUP BY id_contenu
+        HAVING COUNT(id_artiste) = 1
     );
 
     -- Delete albums of the deleted artist
@@ -662,24 +683,6 @@ BEGIN
             FROM credits
             WHERE id_artiste = OLD.id_artiste
         )
-    );
-    
-    -- Delete contenu_audio with only the current artist participating
-    DELETE FROM contenu_audio 
-    WHERE id_contenu IN (
-        SELECT id_contenu 
-        FROM credits 
-        WHERE id_artiste = OLD.id_artiste
-        GROUP BY id_contenu
-        HAVING COUNT(id_artiste) = 1
-    );
-
-    -- Delete from credits
-    DELETE FROM credits
-    WHERE id_contenu IN (
-        SELECT id_contenu
-        FROM credits
-        WHERE id_artiste = OLD.id_artiste
     );
 END
 $$

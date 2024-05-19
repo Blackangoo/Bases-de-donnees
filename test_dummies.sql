@@ -96,3 +96,6 @@ VALUES (1, 1),
 INSERT INTO participation (id_artiste, id_evenement)
 VALUES (3, 1),
 (4, 2);
+
+DELETE FROM artiste
+WHERE id_artiste = 3;
