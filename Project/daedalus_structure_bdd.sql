@@ -650,9 +650,9 @@ END
 $$
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS before_delete_contenu_audio;
+DROP TRIGGER IF EXISTS after_delete_contenu_audio;
 DELIMITER $$
-CREATE TRIGGER before_delete_contenu_audio AFTER DELETE ON contenu_audio FOR EACH ROW
+CREATE TRIGGER after_delete_contenu_audio AFTER DELETE ON contenu_audio FOR EACH ROW
 BEGIN
     -- Delete the album if it contains only the deleted contenu_audio
     IF (SELECT COUNT(*) FROM contenu_audio WHERE id_album = OLD.id_album) = 0 THEN
