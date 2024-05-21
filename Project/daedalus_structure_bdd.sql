@@ -34,7 +34,7 @@ DROP TABLE IF EXISTS artiste;
 CREATE TABLE artiste (
     id_artiste INT NOT NULL, 
     biographie VARCHAR(2000) NOT NULL, 
-    id_label INT NOT NULL, 
+    id_label INT, 
     PRIMARY KEY (id_artiste)
 );
 
@@ -45,7 +45,8 @@ CREATE TABLE artiste (
 ALTER TABLE artiste
     ADD CONSTRAINT fk_artiste_personne
     FOREIGN KEY (id_artiste)
-    REFERENCES personne (id_personne);
+    REFERENCES personne (id_personne)
+    ON DELETE CASCADE;
 
 --
 -- Structure pour la table 'utilisateur'
@@ -56,7 +57,7 @@ CREATE TABLE utilisateur (
     id_utilisateur INT NOT NULL,  
     annee_naissance YEAR,
     canton_residence CHAR(2),
-    id_abonnement INT NOT NULL,
+    id_abonnement INT,
     PRIMARY KEY (id_utilisateur)
 );
 
@@ -67,7 +68,8 @@ CREATE TABLE utilisateur (
 ALTER TABLE utilisateur
     ADD CONSTRAINT fk_utilisateur_personne
     FOREIGN KEY (id_utilisateur)
-    REFERENCES personne (id_personne);
+    REFERENCES personne (id_personne)
+    ON DELETE CASCADE;
 
 -- ########################################################
 
@@ -89,7 +91,8 @@ CREATE TABLE label (
 ALTER TABLE artiste
     ADD CONSTRAINT fk_label_artiste
     FOREIGN KEY (id_label)
-    REFERENCES label (id_label);
+    REFERENCES label (id_label)
+    ON DELETE CASCADE;
 
 -- ########################################################
 
@@ -189,6 +192,7 @@ ALTER TABLE vente
 --
 -- Structure pour la table 'artiste_favori'
 --      relation classe-association entre 'utilisateur' et 'artiste' en trois tables et deux contraintes de clé étrangère
+--      rating prend ses valeurs entre 1 et 5
 --
 
 DROP TABLE IF EXISTS artiste_favori;
@@ -274,7 +278,7 @@ CREATE TABLE contenu_audio (
     date_de_sortie DATE NOT NULL, 
     paroles VARCHAR(2000) NOT NULL,
     id_video_clip INT NOT NULL,
-    id_album INT NOT NULL,
+    id_album INT,
     PRIMARY KEY (id_contenu)
 );
 
@@ -381,7 +385,8 @@ ALTER TABLE favori
 ALTER TABLE favori
     ADD CONSTRAINT fk_favori_utilisateur
     FOREIGN KEY (id_utilisateur)
-    REFERENCES utilisateur (id_utilisateur);
+    REFERENCES utilisateur (id_utilisateur)
+    ON DELETE CASCADE;
 
 -- ########################################################
 
@@ -416,7 +421,8 @@ CREATE TABLE langue_utilisateur (
 ALTER TABLE langue_utilisateur
     ADD CONSTRAINT fk_langue_utilisateur_utilisateur
     FOREIGN KEY (id_utilisateur)
-    REFERENCES utilisateur (id_utilisateur);
+    REFERENCES utilisateur (id_utilisateur)
+    ON DELETE CASCADE;
 
 --
 -- Création de la contrainte de clé étrangère
@@ -650,6 +656,9 @@ END
 $$
 DELIMITER ;
 
+--
+-- Trigger 'contenu_audio'
+--
 DROP TRIGGER IF EXISTS after_delete_contenu_audio;
 DELIMITER $$
 CREATE TRIGGER after_delete_contenu_audio AFTER DELETE ON contenu_audio FOR EACH ROW
