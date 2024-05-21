@@ -124,7 +124,8 @@ CREATE TABLE participation (
 ALTER TABLE participation
     ADD CONSTRAINT fk_participation_evenement
     FOREIGN KEY (id_evenement)
-    REFERENCES evenement (id_evenement);
+    REFERENCES evenement (id_evenement)
+    ON DELETE CASCADE;
 
 --
 -- Création de la contrainte de clé étrangère
@@ -133,7 +134,8 @@ ALTER TABLE participation
 ALTER TABLE participation
     ADD CONSTRAINT fk_participation_artiste
     FOREIGN KEY (id_artiste)
-    REFERENCES artiste (id_artiste);
+    REFERENCES artiste (id_artiste)
+    ON DELETE CASCADE;
 
 -- ########################################################
 
@@ -169,7 +171,8 @@ CREATE TABLE vente (
 ALTER TABLE vente
     ADD CONSTRAINT fk_vente_artiste
     FOREIGN KEY (id_artiste)
-    REFERENCES artiste (id_artiste);
+    REFERENCES artiste (id_artiste)
+    ON DELETE CASCADE;
 
 --
 -- Création de la contrainte de clé étrangère
@@ -178,7 +181,8 @@ ALTER TABLE vente
 ALTER TABLE vente
     ADD CONSTRAINT fk_vente_produits_derives
     FOREIGN KEY (id_produits_derives)
-    REFERENCES produits_derives (id_produits_derives);
+    REFERENCES produits_derives (id_produits_derives)
+    ON DELETE CASCADE;
 
 -- ########################################################
 
@@ -202,7 +206,8 @@ CREATE TABLE artiste_favori (
 ALTER TABLE artiste_favori
     ADD CONSTRAINT fk_artiste_favori_artiste
     FOREIGN KEY (id_artiste)
-    REFERENCES artiste (id_artiste);
+    REFERENCES artiste (id_artiste)
+    ON DELETE CASCADE;
 
 --
 -- Création de la contrainte de clé étrangère
@@ -211,7 +216,8 @@ ALTER TABLE artiste_favori
 ALTER TABLE artiste_favori
     ADD CONSTRAINT fk_artiste_favori_utilisateur
     FOREIGN KEY (id_utilisateur)
-    REFERENCES utilisateur (id_utilisateur);
+    REFERENCES utilisateur (id_utilisateur)
+    ON DELETE CASCADE;
 
 -- ########################################################
 
@@ -331,7 +337,8 @@ CREATE TABLE appartenance (
 ALTER TABLE appartenance
     ADD CONSTRAINT fk_appartenance_contenu_audio
     FOREIGN KEY (id_contenu)
-    REFERENCES contenu_audio (id_contenu);
+    REFERENCES contenu_audio (id_contenu)
+    ON DELETE CASCADE;
 
 --
 -- Création de la contrainte de clé étrangère
@@ -340,7 +347,8 @@ ALTER TABLE appartenance
 ALTER TABLE appartenance
     ADD CONSTRAINT fk_appartenance_playlist
     FOREIGN KEY (id_playlist)
-    REFERENCES playlist (id_playlist);
+    REFERENCES playlist (id_playlist)
+    ON DELETE CASCADE;
 
 --
 -- Structure pour la table 'favori'
@@ -363,7 +371,8 @@ CREATE TABLE favori (
 ALTER TABLE favori
     ADD CONSTRAINT fk_favori_contenu_audio
     FOREIGN KEY (id_contenu)
-    REFERENCES contenu_audio (id_contenu);
+    REFERENCES contenu_audio (id_contenu)
+    ON DELETE CASCADE;
 
 --
 -- Création de la contrainte de clé étrangère
@@ -436,7 +445,8 @@ CREATE TABLE parle (
 ALTER TABLE parle
     ADD CONSTRAINT fk_parle_contenu_audio
     FOREIGN KEY (id_contenu)
-    REFERENCES contenu_audio (id_contenu);
+    REFERENCES contenu_audio (id_contenu)
+    ON DELETE CASCADE;
 
 --
 -- Création de la contrainte de clé étrangère
@@ -479,7 +489,8 @@ CREATE TABLE decrit (
 ALTER TABLE decrit
     ADD CONSTRAINT fk_decrit_contenu_audio
     FOREIGN KEY (id_contenu)
-    REFERENCES contenu_audio (id_contenu);
+    REFERENCES contenu_audio (id_contenu)
+    ON DELETE CASCADE;
 
 --
 -- Création de la contrainte de clé étrangère
@@ -513,7 +524,8 @@ CREATE TABLE credits (
 ALTER TABLE credits
     ADD CONSTRAINT fk_credits_artiste
     FOREIGN KEY (id_artiste)
-    REFERENCES artiste (id_artiste);
+    REFERENCES artiste (id_artiste)
+    ON DELETE CASCADE;
 
 --
 -- Création de la contrainte de clé étrangère
@@ -522,7 +534,8 @@ ALTER TABLE credits
 ALTER TABLE credits
     ADD CONSTRAINT fk_credits_contenu_audio
     FOREIGN KEY (id_contenu)
-    REFERENCES contenu_audio (id_contenu);
+    REFERENCES contenu_audio (id_contenu)
+    ON DELETE CASCADE;
 
 --
 -- Structure pour la table 'type_artiste'
@@ -553,7 +566,8 @@ CREATE TABLE mentionne (
 ALTER TABLE mentionne
     ADD CONSTRAINT fk_mentionne_credits
     FOREIGN KEY (id_credits)
-    REFERENCES credits (id_credits);
+    REFERENCES credits (id_credits)
+    ON DELETE CASCADE;
 
 --
 -- Création de la contrainte de clé étrangère
@@ -562,7 +576,8 @@ ALTER TABLE mentionne
 ALTER TABLE mentionne
     ADD CONSTRAINT fk_mentionne_type_artiste
     FOREIGN KEY (id_type_artiste)
-    REFERENCES type_artiste (id_type_artiste);
+    REFERENCES type_artiste (id_type_artiste)
+    ON DELETE CASCADE;
 
 -- ########################################################
 
@@ -605,21 +620,15 @@ DROP TRIGGER IF EXISTS before_delete_artiste;
 DELIMITER $$
 CREATE TRIGGER before_delete_artiste BEFORE DELETE ON artiste FOR EACH ROW
 BEGIN
-    -- Delete participations of the artist
-    DELETE FROM participation WHERE id_artiste = OLD.id_artiste;
 
     -- Delete events with only the current artist participating
     DELETE FROM evenement 
     WHERE id_evenement IN (
-        SELECT id_evenement 
-        FROM participation 
-        WHERE id_artiste = OLD.id_artiste
+        SELECT id_evenement
+        FROM participation
         GROUP BY id_evenement
-        HAVING COUNT(id_artiste) = 1
+        HAVING COUNT(id_artiste) = 1 AND SUM( id_artiste = OLD.id_artiste ) = 1
     );
-    
-    -- Delete links to the products
-    DELETE FROM vente WHERE id_artiste = OLD.id_artiste;
 
     -- Delete products of the deleted artist
     DELETE FROM produits_derives 
@@ -629,61 +638,31 @@ BEGIN
         WHERE id_artiste = OLD.id_artiste
     );
 
-    -- Delete artiste_favori as the artist is deleted
-    DELETE FROM artiste_favori WHERE id_artiste = OLD.id_artiste;
-
-    -- Delete from appartenance 
-    DELETE FROM appartenance
-    WHERE id_contenu IN (
-        SELECT id_contenu
-        FROM credits
-        WHERE id_artiste = OLD.id_artiste
-    );
-
-    -- Delete from mentionne
-    DELETE FROM mentionne 
-    WHERE id_credits IN (
-        SELECT id_credits
-        FROM credits
-        WHERE id_artiste = OLD.id_artiste
-    );
-
-    -- Delete from credits
-    DELETE FROM credits WHERE id_artiste = OLD.id_artiste;
-
     -- Delete contenu_audio with only the current artist participating
     DELETE FROM contenu_audio 
     WHERE id_contenu IN (
         SELECT id_contenu 
         FROM credits 
-        WHERE id_artiste = OLD.id_artiste
         GROUP BY id_contenu
-        HAVING COUNT(id_artiste) = 1
-    );
-
-    -- Delete albums of the deleted artist
-    DELETE FROM album
-    WHERE id_album IN (
-        SELECT id_album
-        FROM contenu_audio
-        WHERE id_contenu IN (
-            SELECT id_contenu
-            FROM credits
-            WHERE id_artiste = OLD.id_artiste
-        )
-    );
-
-    -- Delete clip_video of the deleted artist
-    DELETE FROM clip_video
-    WHERE id_video_clip IN (
-        SELECT id_video_clip
-        FROM contenu_audio
-        WHERE id_contenu IN (
-            SELECT id_contenu
-            FROM credits
-            WHERE id_artiste = OLD.id_artiste
-        )
+        HAVING COUNT(id_artiste) = 1 AND SUM( id_artiste = OLD.id_artiste ) = 1
     );
 END
 $$
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS before_delete_contenu_audio;
+DELIMITER $$
+CREATE TRIGGER before_delete_contenu_audio AFTER DELETE ON contenu_audio FOR EACH ROW
+BEGIN
+    -- Delete the album if it contains only the deleted contenu_audio
+    IF (SELECT COUNT(*) FROM contenu_audio WHERE id_album = OLD.id_album) = 0 THEN
+        DELETE FROM album WHERE id_album = OLD.id_album;
+    END IF;
+
+    -- Delete the associated clip_video if it is not referenced by any other contenu_audio
+    IF (SELECT COUNT(*) FROM contenu_audio WHERE id_video_clip = OLD.id_video_clip) = 0 THEN
+        DELETE FROM clip_video WHERE id_video_clip = OLD.id_video_clip;
+    END IF;
+END$$
+
 DELIMITER ;

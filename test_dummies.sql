@@ -95,6 +95,7 @@ VALUES (1, 1),
 
 INSERT INTO participation (id_artiste, id_evenement)
 VALUES (3, 1),
+(4, 1), -- to test
 (4, 2);
 
 DELETE FROM artiste
