@@ -675,3 +675,20 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- ########################################################
+
+--
+-- View 'bot_warning'
+--
+CREATE VIEW bot_warning_view AS
+SELECT u.id_utilisateur, 
+	CONCAT(p.prenom, p.nom) AS nom_complet,
+	ca.titre AS titre_contenu,
+	f.count AS nb_ecoutes
+FROM favori f
+INNER JOIN utilisateur u ON f.id_utilisateur = u.id_utilisateur
+INNER JOIN personne p ON f.id_utilisateur = p.id_personne
+INNER JOIN contenu_audio ca ON f.id_contenu = ca.id_contenu
+WHERE f.count>1000
+;
