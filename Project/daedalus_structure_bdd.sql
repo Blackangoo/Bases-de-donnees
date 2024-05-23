@@ -257,7 +257,7 @@ DROP TABLE IF EXISTS clip_video;
 CREATE TABLE clip_video (
     id_video_clip INT NOT NULL,
     animation BOOLEAN NOT NULL, 
-    duree TIME NOT NULL, 
+    duree INT NOT NULL, 
     PRIMARY KEY (id_video_clip)
 );
 
@@ -275,7 +275,7 @@ DROP TABLE IF EXISTS contenu_audio;
 CREATE TABLE contenu_audio (
     id_contenu INT NOT NULL,
     titre VARCHAR(2000) NOT NULL, 
-    duree TIME NOT NULL, 
+    duree INT NOT NULL, 
     date_de_sortie DATE NOT NULL, 
     paroles VARCHAR(2000) NOT NULL,
     id_video_clip INT NOT NULL,
@@ -366,7 +366,7 @@ CREATE TABLE ecoute (
     note INT NOT NULL,
     nombre_ecoute INT NOT NULL,
     date_derniere_ecoute DATE NOT NULL,
-    temps_d_ecoute TIMESTAMP NOT NULL,
+    temps_d_ecoute INT NOT NULL,
     PRIMARY KEY (id_contenu, id_utilisateur)
 );
 
@@ -374,8 +374,8 @@ CREATE TABLE ecoute (
 -- Création de la contrainte de clé étrangère
 --
 
-ALTER TABLE favori
-    ADD CONSTRAINT fk_favori_contenu_audio
+ALTER TABLE ecoute
+    ADD CONSTRAINT fk_ecoute_contenu_audio
     FOREIGN KEY (id_contenu)
     REFERENCES contenu_audio (id_contenu)
     ON DELETE CASCADE;
@@ -384,8 +384,8 @@ ALTER TABLE favori
 -- Création de la contrainte de clé étrangère
 --
 
-ALTER TABLE favori
-    ADD CONSTRAINT fk_favori_utilisateur
+ALTER TABLE ecoute
+    ADD CONSTRAINT fk_ecoute_utilisateur
     FOREIGN KEY (id_utilisateur)
     REFERENCES utilisateur (id_utilisateur)
     ON DELETE CASCADE;
@@ -692,9 +692,9 @@ CREATE VIEW bot_warning_view AS
 SELECT u.id_utilisateur, 
 	CONCAT(p.prenom, p.nom) AS nom_complet,
 	ca.titre AS titre_contenu,
-	e.count AS nb_ecoutes
+	e.nombre_ecoute AS nb_ecoutes
 FROM ecoute e
 INNER JOIN utilisateur u ON e.id_utilisateur = u.id_utilisateur
 INNER JOIN personne p ON e.id_utilisateur = p.id_personne
 INNER JOIN contenu_audio ca ON e.id_contenu = ca.id_contenu
-WHERE e.count>1000;
+WHERE e.nombre_ecoute>1000;
