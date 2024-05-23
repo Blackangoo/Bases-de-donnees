@@ -27450,8 +27450,3 @@ VALUES (10,19),
 (496,20),
 (498,84),
 (498,57);
-
-
-
-DELETE FROM artiste
-WHERE id_artiste = 3;

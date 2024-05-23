@@ -1,11 +1,11 @@
--- select artists that have collaborated the most on the songs
+-- select artists that have collaborated the most on the songs concat nom prenom
 
 SELECT 
     p1.nom AS artist_1_last_name,
     p1.prenom AS artist_1_first_name,
     p2.nom AS artist_2_last_name,
     p2.prenom AS artist_2_first_name,
-    COUNT(*) AS collaboration_count,
+    COUNT(*) AS collaboration_count, --plus précis ptt
     GROUP_CONCAT(ca.titre SEPARATOR ', ') AS collaborated_songs,
     GROUP_CONCAT(l.langue SEPARATOR ', ') AS languages
 FROM 
@@ -32,7 +32,7 @@ ORDER BY
     collaboration_count DESC
 LIMIT 1;
 
--- top 5 artists who have participated in the most events
+-- top 5 artists who have participated in the most events plus une visualisation
 SELECT 
     a.id_artiste,
     p.nom,
@@ -50,12 +50,12 @@ ORDER BY
     event_count DESC
 LIMIT 5;
 
--- top 5 artists that are liked the most by users with a premium plan
+-- top 5 artists that are liked the most by users with a premium plan celle là est mieux
 SELECT 
     a.id_artiste,
     p.nom,
     p.prenom,
-    COUNT(f.id_contenu) AS likes_count
+    COUNT(e.id_contenu) AS likes_count
 FROM 
     artiste a
 JOIN 
@@ -63,9 +63,9 @@ JOIN
 JOIN 
     credits c ON a.id_artiste = c.id_artiste
 JOIN 
-    favori f ON c.id_contenu = f.id_contenu
+    ecoute e ON c.id_contenu = e.id_contenu
 JOIN 
-    utilisateur u ON f.id_utilisateur = u.id_utilisateur
+    utilisateur u ON e.id_utilisateur = u.id_utilisateur
 JOIN 
     abonnement ab ON u.id_abonnement = ab.id_abonnement
 WHERE 
@@ -76,7 +76,7 @@ ORDER BY
     likes_count DESC
 LIMIT 5;
 
--- Listeners who have listened to all songs by a specific artist (with id 10)
+-- Listeners who have listened to all songs by a specific artist (with id 10) procédure ??
 
 SELECT 
     u.id_utilisateur,
@@ -94,9 +94,9 @@ WHERE
         WHERE cr.id_artiste = 10
         AND NOT EXISTS (
             SELECT *
-            FROM favori f
-            WHERE f.id_utilisateur = u.id_utilisateur
-            AND f.id_contenu = ca.id_contenu
+            FROM ecoute e
+            WHERE e.id_utilisateur = u.id_utilisateur
+            AND e.id_contenu = ca.id_contenu
         )
     );
 
@@ -121,8 +121,8 @@ WHERE
         AND pa.prenom = 'Adam'
         AND NOT EXISTS (
             SELECT *
-            FROM favori f
-            WHERE f.id_utilisateur = u.id_utilisateur
-            AND f.id_contenu = ca.id_contenu
+            FROM ecoute e
+            WHERE e.id_utilisateur = u.id_utilisateur
+            AND e.id_contenu = ca.id_contenu
         )
     );

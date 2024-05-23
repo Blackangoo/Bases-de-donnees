@@ -55,8 +55,8 @@ ALTER TABLE artiste
 DROP TABLE IF EXISTS utilisateur;
 CREATE TABLE utilisateur (
     id_utilisateur INT NOT NULL,  
-    annee_naissance YEAR,
-    canton_residence CHAR(2),
+    annee_naissance YEAR NOT NULL,
+    canton_residence CHAR(2) NOT NULL,
     id_abonnement INT,
     PRIMARY KEY (id_utilisateur)
 );
@@ -106,6 +106,7 @@ CREATE TABLE evenement (
     id_evenement INT NOT NULL, 
     lieu VARCHAR(100) NOT NULL, 
     date DATE NOT NULL,
+    lien VARCHAR(512) NOT NULL,
     PRIMARY KEY (id_evenement)
 );
 
@@ -152,7 +153,7 @@ CREATE TABLE produits_derives (
     id_produits_derives INT NOT NULL, 
     description_produits VARCHAR(2000) NOT NULL, 
     prix FLOAT NOT NULL,
-    link VARCHAR(512) NOT NULL,
+    lien VARCHAR(512) NOT NULL,
     PRIMARY KEY (id_produits_derives)
 );
 
@@ -192,14 +193,14 @@ ALTER TABLE vente
 --
 -- Structure pour la table 'artiste_favori'
 --      relation classe-association entre 'utilisateur' et 'artiste' en trois tables et deux contraintes de clé étrangère
---      rating prend ses valeurs entre 1 et 5
+--      note prend ses valeurs entre 1 et 5
 --
 
 DROP TABLE IF EXISTS artiste_favori;
 CREATE TABLE artiste_favori (
     id_utilisateur INT NOT NULL,
     id_artiste INT NOT NULL, 
-    rating INT NOT NULL,
+    note INT NOT NULL,
     PRIMARY KEY (id_utilisateur, id_artiste)
 );
 
@@ -355,16 +356,17 @@ ALTER TABLE appartenance
     ON DELETE CASCADE;
 
 --
--- Structure pour la table 'favori'
+-- Structure pour la table 'ecoute'
 --
 
-DROP TABLE IF EXISTS favori;
-CREATE TABLE favori (
+DROP TABLE IF EXISTS ecoute;
+CREATE TABLE ecoute (
     id_contenu INT NOT NULL, 
     id_utilisateur INT NOT NULL,
-    rating INT NOT NULL,
-    count INT NOT NULL,
+    note INT NOT NULL,
+    nombre_ecoute INT NOT NULL,
     date_derniere_ecoute DATE NOT NULL,
+    temps_d_ecoute TIMESTAMP NOT NULL,
     PRIMARY KEY (id_contenu, id_utilisateur)
 );
 
@@ -588,16 +590,17 @@ ALTER TABLE mentionne
 -- ########################################################
 
 --
--- Trigger 'favori'
+-- Trigger 'ecoute'
 --
-DROP TRIGGER IF EXISTS before_insert_favori;
+
+DROP TRIGGER IF EXISTS before_insert_ecoute;
 DELIMITER $$
-CREATE TRIGGER before_insert_favori BEFORE INSERT ON favori FOR EACH ROW 
+CREATE TRIGGER before_insert_ecoute BEFORE INSERT ON ecoute FOR EACH ROW 
 BEGIN
-    IF NEW.rating < 1 THEN
-        SET NEW.rating = 1;
-    ELSEIF NEW.rating > 5 THEN
-        SET NEW.rating = 5;
+    IF NEW.note < 1 THEN
+        SET NEW.note = 1;
+    ELSEIF NEW.note > 5 THEN
+        SET NEW.note = 5;
     END IF;
 END
 $$
@@ -606,14 +609,15 @@ DELIMITER ;
 --
 -- Trigger 'artiste_favori'
 --
+
 DROP TRIGGER IF EXISTS before_insert_artiste_favori;
 DELIMITER $$
 CREATE TRIGGER before_insert_artiste_favori BEFORE INSERT ON artiste_favori FOR EACH ROW
 BEGIN
-    IF NEW.rating < 1 THEN
-        SET NEW.rating = 1;
-    ELSEIF NEW.rating > 5 THEN
-        SET NEW.rating = 5;
+    IF NEW.note < 1 THEN
+        SET NEW.note = 1;
+    ELSEIF NEW.note > 5 THEN
+        SET NEW.note = 5;
     END IF;
 END
 $$
@@ -622,6 +626,7 @@ DELIMITER ;
 --
 -- Trigger 'artiste'
 --
+
 DROP TRIGGER IF EXISTS before_delete_artiste;
 DELIMITER $$
 CREATE TRIGGER before_delete_artiste BEFORE DELETE ON artiste FOR EACH ROW
@@ -659,6 +664,7 @@ DELIMITER ;
 --
 -- Trigger 'contenu_audio'
 --
+
 DROP TRIGGER IF EXISTS after_delete_contenu_audio;
 DELIMITER $$
 CREATE TRIGGER after_delete_contenu_audio AFTER DELETE ON contenu_audio FOR EACH ROW
@@ -681,14 +687,14 @@ DELIMITER ;
 --
 -- View 'bot_warning'
 --
+
 CREATE VIEW bot_warning_view AS
 SELECT u.id_utilisateur, 
 	CONCAT(p.prenom, p.nom) AS nom_complet,
 	ca.titre AS titre_contenu,
-	f.count AS nb_ecoutes
-FROM favori f
-INNER JOIN utilisateur u ON f.id_utilisateur = u.id_utilisateur
-INNER JOIN personne p ON f.id_utilisateur = p.id_personne
-INNER JOIN contenu_audio ca ON f.id_contenu = ca.id_contenu
-WHERE f.count>1000
-;
+	e.count AS nb_ecoutes
+FROM ecoute e
+INNER JOIN utilisateur u ON e.id_utilisateur = u.id_utilisateur
+INNER JOIN personne p ON e.id_utilisateur = p.id_personne
+INNER JOIN contenu_audio ca ON e.id_contenu = ca.id_contenu
+WHERE e.count>1000;
