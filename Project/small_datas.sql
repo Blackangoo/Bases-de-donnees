@@ -1,3 +1,5 @@
+USE swiss_vibes;
+
 INSERT INTO personne (id_personne, nom_utilisateur, nom, prenom, mot_de_passe, adresse_email)
 VALUES
 (1,'jfleury62','Fleury','Jacques','8LBYyVWA8ZEd','jacques.fleury@yahoo.com'),
