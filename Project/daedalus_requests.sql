@@ -1,13 +1,11 @@
 -- select artists that have collaborated the most on the songs concat nom prenom
 
 SELECT 
-    p1.nom AS artist_1_last_name,
-    p1.prenom AS artist_1_first_name,
-    p2.nom AS artist_2_last_name,
-    p2.prenom AS artist_2_first_name,
+    CONCAT(p1.nom, ' ', p1.prenom) AS artist_1,
+    CONCAT(p2.nom, ' ', p2.prenom) AS artist_2,
     COUNT(*) AS collaboration_count, --plus précis ptt
-    GROUP_CONCAT(ca.titre SEPARATOR ', ') AS collaborated_songs,
-    GROUP_CONCAT(l.langue SEPARATOR ', ') AS languages
+    GROUP_CONCAT(DISTINCT ca.titre SEPARATOR ', ') AS collaborated_songs,
+    GROUP_CONCAT(DISTINCT l.langue SEPARATOR ', ') AS languages
 FROM 
     credits cr1
 JOIN 
@@ -27,7 +25,7 @@ JOIN
 JOIN 
     langage l ON p.id_langage = l.id_langage
 GROUP BY 
-    p1.nom, p1.prenom, p2.nom, p2.prenom
+    artist_1, artist_2
 ORDER BY 
     collaboration_count DESC
 LIMIT 1;
@@ -77,28 +75,32 @@ ORDER BY
 LIMIT 5;
 
 -- Listeners who have listened to all songs by a specific artist (with id 10) procédure ??
-
-SELECT 
-    u.id_utilisateur,
-    p.nom_utilisateur,
-    CONCAT (p.nom, ' ', p.prenom) 'Name of the user'
-FROM 
-    utilisateur u
-JOIN 
-    personne p ON u.id_utilisateur = p.id_personne
-WHERE 
-    NOT EXISTS (
-        SELECT *
-        FROM contenu_audio ca
-        JOIN credits cr ON ca.id_contenu = cr.id_contenu
-        WHERE cr.id_artiste = 10
-        AND NOT EXISTS (
+DELIMITER $$
+CREATE PROCEDURE SuperFans (IN id_artist INT)
+BEGIN
+    SELECT 
+        u.id_utilisateur,
+        p.nom_utilisateur,
+        CONCAT (p.nom, ' ', p.prenom) 'Name of the user'
+    FROM 
+        utilisateur u
+    JOIN 
+        personne p ON u.id_utilisateur = p.id_personne
+    WHERE 
+        NOT EXISTS (
             SELECT *
-            FROM ecoute e
-            WHERE e.id_utilisateur = u.id_utilisateur
-            AND e.id_contenu = ca.id_contenu
-        )
-    );
+            FROM contenu_audio ca
+            JOIN credits cr ON ca.id_contenu = cr.id_contenu
+            WHERE cr.id_artiste = id_artist
+            AND NOT EXISTS (
+                SELECT *
+                FROM ecoute e
+                WHERE e.id_utilisateur = u.id_utilisateur
+                AND e.id_contenu = ca.id_contenu
+            )
+        );
+END $$
+DELIMITER ;
 
 -- same shit but with the name of the artist (Adam Schmidt)
 
@@ -126,3 +128,4 @@ WHERE
             AND e.id_contenu = ca.id_contenu
         )
     );
+

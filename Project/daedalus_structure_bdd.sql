@@ -698,3 +698,31 @@ INNER JOIN utilisateur u ON e.id_utilisateur = u.id_utilisateur
 INNER JOIN personne p ON e.id_utilisateur = p.id_personne
 INNER JOIN contenu_audio ca ON e.id_contenu = ca.id_contenu
 WHERE e.nombre_ecoute>1000;
+
+-- Listeners who have listened to all songs by a specific artist (with id 10) procédure ??
+DELIMITER $$
+CREATE PROCEDURE SuperFans (IN id_artist INT)
+BEGIN
+    SELECT 
+        u.id_utilisateur,
+        p.nom_utilisateur,
+        CONCAT(p.nom, ' ', p.prenom) AS 'Name of the user'
+    FROM 
+        utilisateur u
+    JOIN 
+        personne p ON u.id_utilisateur = p.id_personne
+    WHERE 
+        NOT EXISTS (
+            SELECT *
+            FROM contenu_audio ca
+            JOIN credits cr ON ca.id_contenu = cr.id_contenu
+            WHERE cr.id_artiste = id_artist
+            AND NOT EXISTS (
+                SELECT *
+                FROM ecoute e
+                WHERE e.id_utilisateur = u.id_utilisateur
+                AND e.id_contenu = ca.id_contenu
+            )
+        );
+END $$
+DELIMITER ;
