@@ -129,3 +129,52 @@ WHERE
         )
     );
 
+-- Find the most active listeners this month and their most listened genre
+
+SELECT 
+    u.id_utilisateur,
+    p.nom_utilisateur,
+    CONCAT(p.nom, ' ', p.prenom) AS 'Full Name',
+    g.genre,
+    listens.`Total Listens`
+FROM 
+    utilisateur u
+JOIN 
+    personne p ON u.id_utilisateur = p.id_personne
+JOIN 
+    (
+        SELECT 
+            e.id_utilisateur,
+            SUM(e.nombre_ecoute) AS 'Total Listens'
+        FROM 
+            ecoute e
+        WHERE 
+            MONTH(e.date_derniere_ecoute) = MONTH(CURRENT_DATE())
+            AND YEAR(e.date_derniere_ecoute) = YEAR(CURRENT_DATE())
+        GROUP BY 
+            e.id_utilisateur
+    ) AS listens ON u.id_utilisateur = listens.id_utilisateur
+JOIN 
+    (
+        SELECT 
+            e.id_utilisateur,
+            d.id_genre
+        FROM 
+            ecoute e
+        JOIN 
+            contenu_audio ca ON e.id_contenu = ca.id_contenu
+        JOIN 
+            decrit d ON ca.id_contenu = d.id_contenu
+        WHERE 
+            MONTH(e.date_derniere_ecoute) = MONTH(CURRENT_DATE())
+            AND YEAR(e.date_derniere_ecoute) = YEAR(CURRENT_DATE())
+        GROUP BY 
+            e.id_utilisateur, d.id_genre
+        ORDER BY 
+            COUNT(*) DESC
+    ) AS top_genre ON listens.id_utilisateur = top_genre.id_utilisateur
+JOIN 
+    genre g ON top_genre.id_genre = g.id_genre
+ORDER BY 
+    listens.`Total Listens` DESC
+LIMIT 5;
