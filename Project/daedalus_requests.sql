@@ -178,3 +178,48 @@ JOIN
 ORDER BY 
     listens.`Total Listens` DESC
 LIMIT 5;
+
+SELECT 
+    u.id_utilisateur,
+    p.nom_utilisateur,
+    CONCAT(p.nom, ' ', p.prenom) AS 'Full Name',
+    (SELECT 
+            CONCAT(g.genre, ' (', MAX(e.nombre_ecoute), ')')
+        FROM 
+            ecoute e
+        JOIN 
+            contenu_audio ca ON e.id_contenu = ca.id_contenu
+        JOIN 
+            decrit d ON ca.id_contenu = d.id_contenu
+        JOIN 
+            genre g ON d.id_genre = g.id_genre
+        WHERE 
+            e.id_utilisateur = u.id_utilisateur
+            AND MONTH(e.date_derniere_ecoute) = MONTH(CURRENT_DATE())
+            AND YEAR(e.date_derniere_ecoute) = YEAR(CURRENT_DATE())
+        GROUP BY 
+            e.id_utilisateur, d.id_genre
+        ORDER BY 
+            MAX(e.nombre_ecoute) DESC
+        LIMIT 1) AS top_genre,
+    listens.`Total Listens`
+FROM 
+    utilisateur u
+JOIN 
+    personne p ON u.id_utilisateur = p.id_personne
+JOIN 
+    (
+        SELECT 
+            e.id_utilisateur,
+            SUM(e.nombre_ecoute) AS 'Total Listens'
+        FROM 
+            ecoute e
+        WHERE 
+            MONTH(e.date_derniere_ecoute) = MONTH(CURRENT_DATE())
+            AND YEAR(e.date_derniere_ecoute) = YEAR(CURRENT_DATE())
+        GROUP BY 
+            e.id_utilisateur
+    ) AS listens ON u.id_utilisateur = listens.id_utilisateur
+ORDER BY 
+    listens.`Total Listens` DESC
+LIMIT 10;
