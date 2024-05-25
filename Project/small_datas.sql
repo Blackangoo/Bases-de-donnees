@@ -16965,7 +16965,7 @@ VALUES
 
 INSERT INTO ecoute (id_contenu, id_utilisateur, note, nombre_ecoute, date_derniere_ecoute, temps_d_ecoute)
 VALUES
-(1452,1,1,247,'2018-08-04',53110),
+(1452,1,1,1247,'2018-08-04',53),
 (1517,1,3,592,'1996-10-27',119523),
 (1577,1,2,398,'1998-03-04',38610),
 (794,2,4,811,'2011-04-28',66341),

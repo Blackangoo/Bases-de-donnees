@@ -689,15 +689,19 @@ DELIMITER ;
 --
 
 CREATE VIEW bot_warning_view AS
-SELECT u.id_utilisateur, 
-	CONCAT(p.prenom, p.nom) AS nom_complet,
-	ca.titre AS titre_contenu,
-	e.nombre_ecoute AS nb_ecoutes
+SELECT 
+    u.id_utilisateur, 
+    CONCAT(p.prenom, ' ', p.nom) AS nom_complet,
+    GROUP_CONCAT(ca.titre SEPARATOR ', ') AS titres_contenus,
+    GROUP_CONCAT(e.nombre_ecoute SEPARATOR ', ') AS ecoutes,
+    GROUP_CONCAT(e.temps_d_ecoute / e.nombre_ecoute SEPARATOR ', ') AS fractions_ecoute,
+    GROUP_CONCAT(ca.duree / 5 SEPARATOR ', ') AS pourcentages_contenu
 FROM ecoute e
 INNER JOIN utilisateur u ON e.id_utilisateur = u.id_utilisateur
 INNER JOIN personne p ON e.id_utilisateur = p.id_personne
 INNER JOIN contenu_audio ca ON e.id_contenu = ca.id_contenu
-WHERE e.nombre_ecoute>1000;
+WHERE e.nombre_ecoute > 1000 AND e.temps_d_ecoute / e.nombre_ecoute < ca.duree / 10
+GROUP BY u.id_utilisateur, nom_complet;
 
 -- Listeners who have listened to all songs by a specific artist (with id 10) procédure ??
 DELIMITER $$
