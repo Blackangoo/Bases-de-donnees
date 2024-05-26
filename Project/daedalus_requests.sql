@@ -223,3 +223,37 @@ JOIN
 ORDER BY 
     listens.`Total Listens` DESC
 LIMIT 10;
+
+
+-- rank the most popular cantons
+
+SELECT 
+    most_spoken_language_canton.canton_of_residence AS most_spoken_language_canton,
+    COUNT(*) AS user_count
+FROM 
+    utilisateur u
+JOIN 
+    langue_utilisateur ON u.id_utilisateur = langue_utilisateur.id_utilisateur
+JOIN 
+    langage ON langue_utilisateur.id_langage = langage.id_langage
+JOIN (
+    SELECT 
+        langage.langue AS spoken_language,
+        utilisateur.canton_residence AS canton_of_residence
+    FROM 
+        langage
+    JOIN 
+        langue_utilisateur ON langage.id_langage = langue_utilisateur.id_langage
+    JOIN 
+        utilisateur ON langue_utilisateur.id_utilisateur = utilisateur.id_utilisateur
+    GROUP BY 
+        langage.langue, utilisateur.canton_residence
+    ORDER BY 
+        COUNT(*) DESC
+) AS most_spoken_language_canton ON u.canton_residence = most_spoken_language_canton.canton_of_residence
+WHERE 
+    langage.langue = most_spoken_language_canton.spoken_language
+GROUP BY 
+    most_spoken_language_canton.canton_of_residence
+ORDER BY 
+    user_count DESC;

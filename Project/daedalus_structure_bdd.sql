@@ -703,30 +703,40 @@ INNER JOIN contenu_audio ca ON e.id_contenu = ca.id_contenu
 WHERE e.nombre_ecoute > 1000 AND e.temps_d_ecoute / e.nombre_ecoute < ca.duree / 10
 GROUP BY u.id_utilisateur, nom_complet;
 
--- Listeners who have listened to all songs by a specific artist (with id 10) procédure ??
+-- Procedure to determine listeners who have listened to all songs by a specific artist
+
 DELIMITER $$
+
 CREATE PROCEDURE SuperFans (IN id_artist INT)
 BEGIN
-    SELECT 
-        u.id_utilisateur,
-        p.nom_utilisateur,
-        CONCAT(p.nom, ' ', p.prenom) AS 'Name of the user'
-    FROM 
-        utilisateur u
-    JOIN 
-        personne p ON u.id_utilisateur = p.id_personne
-    WHERE 
-        NOT EXISTS (
-            SELECT *
-            FROM contenu_audio ca
-            JOIN credits cr ON ca.id_contenu = cr.id_contenu
-            WHERE cr.id_artiste = id_artist
-            AND NOT EXISTS (
+    -- Check if the artist ID exists in the artiste table
+    IF NOT EXISTS (SELECT * FROM artiste WHERE id_artiste = id_artist) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Invalid artist ID';
+    ELSE
+        -- Main query to fetch super fans
+        SELECT 
+            u.id_utilisateur,
+            p.nom_utilisateur,
+            CONCAT(p.nom, ' ', p.prenom) AS 'Name of the user'
+        FROM 
+            utilisateur u
+        JOIN 
+            personne p ON u.id_utilisateur = p.id_personne
+        WHERE 
+            NOT EXISTS (
                 SELECT *
-                FROM ecoute e
-                WHERE e.id_utilisateur = u.id_utilisateur
-                AND e.id_contenu = ca.id_contenu
-            )
-        );
+                FROM contenu_audio ca
+                JOIN credits cr ON ca.id_contenu = cr.id_contenu
+                WHERE cr.id_artiste = id_artist
+                AND NOT EXISTS (
+                    SELECT *
+                    FROM ecoute e
+                    WHERE e.id_utilisateur = u.id_utilisateur
+                    AND e.id_contenu = ca.id_contenu
+                )
+            );
+    END IF;
 END $$
+
 DELIMITER ;
