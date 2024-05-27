@@ -131,53 +131,53 @@ WHERE
 
 -- Find the most active listeners this month and their most listened genre
 
-SELECT 
-    u.id_utilisateur,
-    p.nom_utilisateur,
-    CONCAT(p.nom, ' ', p.prenom) AS 'Full Name',
-    g.genre,
-    listens.`Total Listens`
-FROM 
-    utilisateur u
-JOIN 
-    personne p ON u.id_utilisateur = p.id_personne
-JOIN 
-    (
-        SELECT 
-            e.id_utilisateur,
-            SUM(e.nombre_ecoute) AS 'Total Listens'
-        FROM 
-            ecoute e
-        WHERE 
-            MONTH(e.date_derniere_ecoute) = MONTH(CURRENT_DATE())
-            AND YEAR(e.date_derniere_ecoute) = YEAR(CURRENT_DATE())
-        GROUP BY 
-            e.id_utilisateur
-    ) AS listens ON u.id_utilisateur = listens.id_utilisateur
-JOIN 
-    (
-        SELECT 
-            e.id_utilisateur,
-            d.id_genre
-        FROM 
-            ecoute e
-        JOIN 
-            contenu_audio ca ON e.id_contenu = ca.id_contenu
-        JOIN 
-            decrit d ON ca.id_contenu = d.id_contenu
-        WHERE 
-            MONTH(e.date_derniere_ecoute) = MONTH(CURRENT_DATE())
-            AND YEAR(e.date_derniere_ecoute) = YEAR(CURRENT_DATE())
-        GROUP BY 
-            e.id_utilisateur, d.id_genre
-        ORDER BY 
-            COUNT(*) DESC
-    ) AS top_genre ON listens.id_utilisateur = top_genre.id_utilisateur
-JOIN 
-    genre g ON top_genre.id_genre = g.id_genre
-ORDER BY 
-    listens.`Total Listens` DESC
-LIMIT 5;
+-- SELECT 
+--     u.id_utilisateur,
+--     p.nom_utilisateur,
+--     CONCAT(p.nom, ' ', p.prenom) AS 'Full Name',
+--     g.genre,
+--     listens.`Total Listens`
+-- FROM 
+--     utilisateur u
+-- JOIN 
+--     personne p ON u.id_utilisateur = p.id_personne
+-- JOIN 
+--     (
+--         SELECT 
+--             e.id_utilisateur,
+--             SUM(e.nombre_ecoute) AS 'Total Listens'
+--         FROM 
+--             ecoute e
+--         WHERE 
+--             MONTH(e.date_derniere_ecoute) = MONTH(CURRENT_DATE())
+--             AND YEAR(e.date_derniere_ecoute) = YEAR(CURRENT_DATE())
+--         GROUP BY 
+--             e.id_utilisateur
+--     ) AS listens ON u.id_utilisateur = listens.id_utilisateur
+-- JOIN 
+--     (
+--         SELECT 
+--             e.id_utilisateur,
+--             d.id_genre
+--         FROM 
+--             ecoute e
+--         JOIN 
+--             contenu_audio ca ON e.id_contenu = ca.id_contenu
+--         JOIN 
+--             decrit d ON ca.id_contenu = d.id_contenu
+--         WHERE 
+--             MONTH(e.date_derniere_ecoute) = MONTH(CURRENT_DATE())
+--             AND YEAR(e.date_derniere_ecoute) = YEAR(CURRENT_DATE())
+--         GROUP BY 
+--             e.id_utilisateur, d.id_genre
+--         ORDER BY 
+--             COUNT(*) DESC
+--     ) AS top_genre ON listens.id_utilisateur = top_genre.id_utilisateur
+-- JOIN 
+--     genre g ON top_genre.id_genre = g.id_genre
+-- ORDER BY 
+--     listens.`Total Listens` DESC
+-- LIMIT 5;
 
 SELECT 
     u.id_utilisateur,
@@ -225,7 +225,7 @@ ORDER BY
 LIMIT 10;
 
 
--- rank the most popular cantons
+-- rank the most popular cantons VISUALISATION
 
 SELECT 
     most_spoken_language_canton.canton_of_residence AS most_spoken_language_canton,
@@ -257,3 +257,28 @@ GROUP BY
     most_spoken_language_canton.canton_of_residence
 ORDER BY 
     user_count DESC;
+
+
+-- find users that were born in the years 1990-2000 and who's canton if residency is either Geneva or Vaud and what are their listens count
+SELECT 
+    u.id_utilisateur,
+    p.nom_utilisateur,
+    COUNT(e.id_contenu) AS total_songs_listened
+FROM 
+    utilisateur u
+JOIN 
+    personne p ON u.id_utilisateur = p.id_personne
+JOIN 
+    ecoute e ON u.id_utilisateur = e.id_utilisateur
+WHERE 
+    (u.annee_naissance BETWEEN 1990 AND 2000)  
+    AND 
+    (
+        u.canton_residence = 'GE'  
+        OR 
+        u.canton_residence = 'VD'  
+    )
+GROUP BY 
+    u.id_utilisateur, p.nom_utilisateur
+ORDER BY 
+    total_songs_listened DESC;
