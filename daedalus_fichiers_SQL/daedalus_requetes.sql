@@ -104,7 +104,7 @@ ORDER BY
 LIMIT 10;
 
 
--- find users that were born in the years 1990-2000 and who's canton if residency is either Geneva or Vaud and what are their listens count
+-- find users that were born in the years 190-2000 and who's canton if residency is either Geneva or Vaud and what are their listens count
 
 SELECT 
     u.id_utilisateur,
