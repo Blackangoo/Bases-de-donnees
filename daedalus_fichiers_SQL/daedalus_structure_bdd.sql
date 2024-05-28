@@ -703,6 +703,8 @@ INNER JOIN contenu_audio ca ON e.id_contenu = ca.id_contenu
 WHERE e.nombre_ecoute > 1000 AND e.temps_d_ecoute / e.nombre_ecoute < ca.duree / 10
 GROUP BY u.id_utilisateur, nom_complet;
 
+-- ########################################################
+
 -- Procedure to determine listeners who have listened to all songs by a specific artist
 
 DELIMITER $$
