@@ -30,6 +30,7 @@ ORDER BY
     collaboration_count DESC
 LIMIT 1;
 
+-- ########################################################
 
 -- top 5 artists that are liked the most by users with a premium plan 
 
@@ -55,6 +56,8 @@ GROUP BY
 ORDER BY 
     likes_count DESC 
 LIMIT 5;
+
+-- ########################################################
 
 -- who are the most active listeners and what are their favorite genres
 
@@ -103,8 +106,9 @@ ORDER BY
     listens.`Total Listens` DESC
 LIMIT 10;
 
+-- ########################################################
 
--- find users that were born in the years 190-2000 and who's canton if residency is either Geneva or Vaud and what are their listens count
+-- find users that were born in the years 1970-1980 and who's canton if residency is either Zurich or Berne and what are their listens count
 
 SELECT 
     u.id_utilisateur,
