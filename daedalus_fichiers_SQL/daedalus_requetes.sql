@@ -117,12 +117,12 @@ JOIN
 JOIN 
     ecoute e ON u.id_utilisateur = e.id_utilisateur
 WHERE 
-    (u.annee_naissance BETWEEN 1990 AND 2000)  
+    (u.annee_naissance BETWEEN 1970 AND 1980)  
     AND 
     (
-        u.canton_residence = 'GE'  
+        u.canton_residence = 'ZU'  
         OR 
-        u.canton_residence = 'VD'  
+        u.canton_residence = 'BE'  
     )
 GROUP BY 
     u.id_utilisateur, p.nom_utilisateur
