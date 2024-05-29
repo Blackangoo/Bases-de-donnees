@@ -642,12 +642,13 @@ BEGIN
         HAVING COUNT(id_artiste) = 1 AND SUM( id_artiste = OLD.id_artiste ) = 1
     );
 
-    -- Delete products of the deleted artist
+    -- Delete products sold only by the deleted artist
     DELETE FROM produits_derives 
     WHERE id_produits_derives IN (
         SELECT id_produits_derives 
         FROM vente 
-        WHERE id_artiste = OLD.id_artiste
+        GROUP BY id_produits_derives
+        HAVING COUNT(id_artiste) = 1 AND SUM( id_artiste = OLD.id_artiste ) = 1
     );
 
     -- Delete contenu_audio with only the current artist participating
