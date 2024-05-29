@@ -1,5 +1,6 @@
 -- Suppression de la base de données si elle existe
 DROP DATABASE IF EXISTS swiss_vibes;
+
 -- Création de la base de données
 CREATE DATABASE swiss_vibes;
 
